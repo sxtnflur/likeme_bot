@@ -1,15 +1,17 @@
 import os.path
 from pathlib import Path
 
+from config import settings
 from .base import BaseTexts, AvatarTexts, PaymentTexts, GenerationTexts, MainMenuButtons
 
 
 class Texts:
     def __init__(self, language: str):
-        self.folder = Path(f'./src/texts/texts/{language}')
+        base_dir = Path(settings.BASE_DIR)
+        self.folder = base_dir.joinpath(f'texts/texts/{language}')
 
     def __get_path(self, filename: str):
-        return os.path.join(self.folder, filename)
+        return self.folder.joinpath(filename).__str__()
 
     @property
     def base(self):
