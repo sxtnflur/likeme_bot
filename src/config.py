@@ -2,6 +2,8 @@ from pydantic.v1 import BaseSettings
 
 
 class Settings(BaseSettings):
+    BASE_DIR: str = ''
+
     DATABASE_URL: str
     TRAIN_CALLBACK_URL: str = ''
     OPENAI_API_KEY: str = ''
