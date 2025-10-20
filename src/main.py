@@ -17,16 +17,16 @@ dp.callback_query.middleware(TextsMiddleware())
 
 dp.message.middleware(MenuButtonsMiddleware())
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await onstartup(bot)
+    await bot.set_webhook(url=settings.BOT_WEBHOOK_URL, request_timeout=60)
+    yield
+    await bot.delete_webhook()
+
 
 def create_webhook(_=None) -> FastAPI:
-    app = create_app()
-
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        await onstartup(bot)
-        await bot.set_webhook(url=settings.BOT_WEBHOOK_URL, request_timeout=60)
-        yield
-        await bot.delete_webhook()
+    app = create_app(prefix=settings.API_PREFIX, lifespan=lifespan)
 
     async def feed_update(update: Update):
         await dp.feed_update(bot=bot, update=update)

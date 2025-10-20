@@ -6,3 +6,5 @@ fastapi
 yookassa-async
 python-dotenv
 Pillow
+sqlalchemy
+asyncpg

@@ -8,5 +8,7 @@ dp = Dispatcher()
 
 
 async def onstartup(bot: Bot) -> None:
-    await bot.delete_webhook()
+    try:
+        await bot.delete_webhook()
+    except: pass
     await set_commands(bot)
