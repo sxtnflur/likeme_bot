@@ -6,10 +6,10 @@ from .base import BaseRepo
 from ..models.generated_images import GeneratedImage
 
 
-class FeedStrategy(StrEnum):
-    NEWEST = "newest"
-    POPULAR = "popular"
-    TRENDING = "trending"
+class FeedOrdering(StrEnum):
+    new = "new"
+    top = "top"
+    all = "all"
 
 
 class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
@@ -17,7 +17,7 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
 
     async def get_list_with_user(
             self, filters: dict,
-            strategy: FeedStrategy = FeedStrategy.NEWEST,
+            strategy: FeedOrdering = FeedOrdering.all,
             offset: int | None = None,
             limit: int | None = None
     ) -> list[GeneratedImage]:
@@ -41,17 +41,17 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
         if limit:
             stmt = stmt.limit(limit)
 
-        if strategy == FeedStrategy.NEWEST:
+        if strategy == FeedOrdering.new:
             stmt = stmt.order_by(desc(self.model.created_at))
 
-        elif strategy == FeedStrategy.POPULAR:
+        elif strategy == FeedOrdering.top:
             # Предполагаем, что у вас есть поля для оценки популярности
             stmt = stmt.order_by(
                 desc(self.model.likes_count),  # или views_count, rating и т.д.
                 desc(self.model.created_at)  # второстепенная сортировка по новизне
             )
 
-        elif strategy == FeedStrategy.TRENDING:
+        elif strategy == FeedOrdering.all:
             # Более сложная логика - комбинация популярности и новизны
             # Например: популярность * коэффициент новизны
             stmt = stmt.order_by(

@@ -1,6 +1,6 @@
 from api.schemas.feed import FeedPost
 from database import GeneratedImagesRepo
-from database.repositories.generated_images import FeedStrategy
+from database.repositories.generated_images import FeedOrdering
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -9,7 +9,7 @@ class FeedUseCase:
         self.db = db
 
     async def get_feed(
-        self, stategy: FeedStrategy = FeedStrategy.NEWEST, offset: int = 0, limit: int = 50
+        self, stategy: FeedOrdering = FeedOrdering.all, offset: int = 0, limit: int = 50
     ) -> list[FeedPost]:
         posts = await GeneratedImagesRepo(self.db).get_list_with_user(
             filters=dict(is_private=False),
