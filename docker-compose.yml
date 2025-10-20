@@ -16,4 +16,4 @@ services:
     env_file:
       - .env
     volumes:
-      - ./cdn:/cdn
+      - /cdn:/cdn
