@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
 from bot import keyboards
 from bot.middlewares.media_group import MediaMiddleware
 from database import db_connect, UsersRepo, AvatarsRepo
@@ -74,6 +74,23 @@ async def get_prompt(
     )
 
 
+@router.callback_query(keyboards.callback_datas.SelectIsPrivateCallback.filter())
+async def select_is_private(call: CallbackQuery, texts: Texts):
+    new_ikb = []
+    for row in call.message.reply_markup.inline_keyboard:
+        new_row = []
+        for btn in row:
+            callback_data = keyboards.callback_datas.SelectIsPrivateCallback.from_callback_data(btn.callback_data)
+            if callback_data:
+                is_private = not callback_data.is_private
+                btn.callback_data = keyboards.callback_datas.SelectIsPrivateCallback(is_private=is_private).pack()
+                btn.text = texts.generation.is_private_button(is_private)
+            new_row.append(btn)
+        new_ikb.append(new_row)
+
+    await call.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_ikb))
+
+
 @router.callback_query(keyboards.callback_datas.StartImageGenCallback.filter())
 @db_connect()
 async def start_gen(
@@ -89,6 +106,15 @@ async def start_gen(
 
     await call.message.delete_reply_markup()
 
+    is_private = None
+    for row in call.message.reply_markup.inline_keyboard:
+        for btn in row:
+            callback_data = keyboards.callback_datas.SelectIsPrivateCallback.from_callback_data(btn.callback_data)
+            if callback_data:
+                is_private = callback_data.is_private
+    if is_private is None:
+        raise Exception('Не найден is_private')
+
     try:
         await image_generator_service.generate_image(
             user_id=call.from_user.id,
@@ -96,6 +122,7 @@ async def start_gen(
             db=db,
             texts=texts,
             prompt_image_file_ids=file_ids,
+            is_private=is_private,
             session=call.bot.session._session
         )
     except Exception as e:

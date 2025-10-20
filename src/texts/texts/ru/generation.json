@@ -5,6 +5,8 @@
   "NO_GENERATIONS_MORE": "Похоже у вас закончились генерации",
   "NO_AVATAR_ELSE": "У вас пока нет аватара для создания фото. Отправьте ваше фото:",
   "SELECTED_AVATAR_BUTTON": "Выбранный аватар: {}",
+  "IS_PRIVATE_BUTTON_PRIVATE": "Закрытый \uD83D\uDD12",
+  "IS_PRIVATE_BUTTON_PUBLIC": "Публичный \uD83D\uDC41",
   "GENERATE_BUTTON": "Сгенерировать",
   "ON_FAILED_GENERATION": "<b>Произошла непредвиденная ошибка</b>\nПопробуйте еще раз позже\n\n<i>Ваши генерации не потратились</i>"
 }
