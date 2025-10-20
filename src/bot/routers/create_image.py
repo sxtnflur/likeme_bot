@@ -104,8 +104,6 @@ async def start_gen(
     prompt = data.get('create_image_prompt')
     file_ids = data.get('create_image_file_ids', [])
 
-    await call.message.delete_reply_markup()
-
     is_private = None
     for row in call.message.reply_markup.inline_keyboard:
         for btn in row:
@@ -117,6 +115,7 @@ async def start_gen(
 
     try:
         await image_generator_service.generate_image(
+            message=call.message,
             user_id=call.from_user.id,
             prompt=prompt,
             db=db,

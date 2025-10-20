@@ -38,6 +38,8 @@ class GenerationTexts(TextsCollectionJson):
 
     ON_FAILED_GENERATION: str
 
+    WAIT_MESSAGE: str
+
     def selected_avatar_button(self, avatar_name: str):
         return self.SELECTED_AVATAR_BUTTON.format(avatar_name)
 
@@ -62,6 +64,18 @@ class GenerationTexts(TextsCollectionJson):
         if is_private:
             return self.IS_PRIVATE_BUTTON_PRIVATE
         return self.IS_PRIVATE_BUTTON_PUBLIC
+
+    def wait_message(self, prompt: str, is_private: bool) -> str:
+        return self.WAIT_MESSAGE.format(
+            prompt=textwrap.shorten(text=prompt, width=50, placeholder='...'),
+            privacy=self.is_private_button(is_private)
+        )
+
+    def on_image_generated(self, prompt: str, is_private: bool):
+        return self.ON_IMAGE_GENERATED.format(
+            prompt=textwrap.shorten(text=prompt, width=50, placeholder='...'),
+            privacy=self.is_private_button(is_private)
+        )
 
 
 class PaymentTexts(TextsCollectionJson):
