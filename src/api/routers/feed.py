@@ -8,7 +8,7 @@ from typing_extensions import Annotated
 router = APIRouter(prefix='/feed')
 
 
-@router.post('')
+@router.get('')
 async def get_feed(
     feed_use_case: FeedUseCase,
     strategy: Annotated[FeedStrategy, Query(...)] = FeedStrategy.NEWEST,
