@@ -4,6 +4,8 @@ import aiogram
 import aiohttp
 from PIL import Image
 import io
+
+from aiogram.types import Message
 from services.storage import BaseStorage
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import UsersRepo, AvatarsRepo, GeneratedImagesRepo
@@ -19,7 +21,9 @@ class ImageGeneratorService:
         self.bot = bot
         self.storage = file_storage
 
-    async def generate_image(self, user_id: int,
+    async def generate_image(self,
+                             message: Message,
+                             user_id: int,
                              prompt: str,
                              db: AsyncSession, texts: Texts,
                              prompt_image_file_ids: list[str],
@@ -75,13 +79,19 @@ class ImageGeneratorService:
             )
             return
 
+        wait_msg = await message.edit_text(
+            text=texts.generation.wait_message(prompt, is_private),
+            reply_markup=None
+        )
         images = await send_action_while_do_func(
             coroutine=coro,
             chat_id=user_id,
             bot=self.bot,
-            action='send_photo'
+            action='upload_photo'
         )
         res_image_url = images[0]
+
+        await wait_msg.delete()
 
         await self.bot.send_photo(
             chat_id=user_id,
