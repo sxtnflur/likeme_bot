@@ -23,6 +23,7 @@ class ImageGeneratorService:
                              prompt: str,
                              db: AsyncSession, texts: Texts,
                              prompt_image_file_ids: list[str],
+                             is_private: bool,
                              session: aiohttp.ClientSession
                              ):
         try:
@@ -99,5 +100,6 @@ class ImageGeneratorService:
                 user_id=user_id,
                 image_url=res_image_url,
                 prompt=prompt,
-                prompt_images=prompt_images
+                prompt_images=prompt_images,
+                is_private=is_private
             )

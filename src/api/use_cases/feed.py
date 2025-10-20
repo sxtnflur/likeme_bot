@@ -12,7 +12,7 @@ class FeedUseCase:
         self, stategy: FeedStrategy = FeedStrategy.NEWEST, offset: int = 0, limit: int = 50
     ) -> list[FeedPost]:
         posts = await GeneratedImagesRepo(self.db).get_list_with_user(
-            filters=dict(),
+            filters=dict(is_private=False),
             strategy=stategy,
             offset=offset,
             limit=limit

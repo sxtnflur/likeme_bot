@@ -30,6 +30,10 @@ class GenerationTexts(TextsCollectionJson):
     NO_AVATAR_ELSE: str
 
     SELECTED_AVATAR_BUTTON: str
+
+    IS_PRIVATE_BUTTON_PRIVATE: str
+    IS_PRIVATE_BUTTON_PUBLIC: str
+
     GENERATE_BUTTON: str
 
     ON_FAILED_GENERATION: str
@@ -53,6 +57,11 @@ class GenerationTexts(TextsCollectionJson):
         return self.PRE_CREATE_IMAGE.format(
             has_prompt_text, has_images_text, chosen_avatar_name
         )
+
+    def is_private_button(self, is_private: bool) -> str:
+        if is_private:
+            return self.IS_PRIVATE_BUTTON_PRIVATE
+        return self.IS_PRIVATE_BUTTON_PUBLIC
 
 
 class PaymentTexts(TextsCollectionJson):
