@@ -1,0 +1,84 @@
+import textwrap
+
+from schemas.payment import GenerationsBuy
+from texts.json import TextsCollectionJson
+
+
+class BaseTexts(TextsCollectionJson):
+    BACK_BUTTON: str
+    START_MESSAGE: str
+    FIRST_MESSAGE: str
+    UNPREDICTABLE_ERROR: str
+
+
+class AvatarTexts(TextsCollectionJson):
+    ON_SEND_AVATAR_PHOTO: str
+    ON_CREATE_AVATAR: str
+    INPUT_MY_NAME_FOR_MODEL: str
+
+    TO_CREATE_IMAGE_BUTTON: str
+
+    def on_create_avatar(self, avatar_name: str):
+        return self.ON_CREATE_AVATAR.format(avatar_name)
+
+
+class GenerationTexts(TextsCollectionJson):
+    START_CREATE_IMAGE: str
+    PRE_CREATE_IMAGE: str
+    ON_IMAGE_GENERATED: str
+    NO_GENERATIONS_MORE: str
+    NO_AVATAR_ELSE: str
+
+    SELECTED_AVATAR_BUTTON: str
+    GENERATE_BUTTON: str
+
+    ON_FAILED_GENERATION: str
+
+    def selected_avatar_button(self, avatar_name: str):
+        return self.SELECTED_AVATAR_BUTTON.format(avatar_name)
+
+    def pre_create_image(
+        self, prompt: str,
+        has_images: bool,
+        chosen_avatar_name: str
+    ):
+        # Промпт: {}
+        # Фото: {}
+        #
+        # Можешь присылать фото или промпт для генерации
+        # или жми Генерировать
+
+        has_prompt_text = textwrap.shorten(text=prompt, width=50, placeholder='...')
+        has_images_text = '✅' if has_images else '...'
+        return self.PRE_CREATE_IMAGE.format(
+            has_prompt_text, has_images_text, chosen_avatar_name
+        )
+
+
+class PaymentTexts(TextsCollectionJson):
+    BUY_START: str
+    BUY_IMAGE_GENERATIONS_BUTTON: str
+    BUY_IMAGE_GENERATIONS: str
+    BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON: str = '{} за {} руб'
+
+    SELECT_PACKAGE: str
+
+    PAY_BUTTON: str = 'Оплатить'
+    ON_SUCCESS_PAYMENT: str
+
+    def buy_start(self, my_image_generations: int):
+        return self.BUY_START.format(my_image_generations)
+
+    def generation_buy_choose_button(self, obj: GenerationsBuy):
+        return self.BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON.format(
+            obj.generations, obj.price
+        )
+
+    def select_package(self, obj: GenerationsBuy):
+        return self.SELECT_PACKAGE
+
+
+class MainMenuButtons(TextsCollectionJson):
+    AVATAR: str
+    CREATE_IMAGE: str
+    PAYMENT: str

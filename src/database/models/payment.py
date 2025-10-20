@@ -1,0 +1,11 @@
+from database.models.base import Base, IntPk, TgId
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
+
+
+class Payment(Base):
+    __tablename__ = 'payments'
+
+    id: Mapped[IntPk]
+    user_id: Mapped[TgId] = mapped_column(ForeignKey('users.id'))
+    package_id: Mapped[int]
