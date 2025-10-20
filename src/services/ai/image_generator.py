@@ -46,13 +46,15 @@ class ImageGeneratorService:
             )
             return
 
+        prompt_images = None
         if avatar.photos:
             images = [await image_url_to_pil(str(avatar.photos[0]), session=session)]
             if prompt_image_file_ids:
-                images += [
+                prompt_images = [
                     await image_file_id_to_pil(file_id, bot=self.bot)
                     for file_id in prompt_image_file_ids
                 ]
+                images += prompt_images
 
             coro = nanobanana.edit_image(
                 prompt,
@@ -95,5 +97,7 @@ class ImageGeneratorService:
             )
             await GeneratedImagesRepo(db).add(
                 user_id=user_id,
-                image_url=res_image_url
+                image_url=res_image_url,
+                prompt=prompt,
+                prompt_images=prompt_images
             )
