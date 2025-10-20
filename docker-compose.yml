@@ -15,3 +15,5 @@ services:
       - ${APP_PORT}
     env_file:
       - .env
+    volumes:
+      - /cdn:/cdn
