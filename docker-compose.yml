@@ -15,8 +15,5 @@ services:
       - ${APP_PORT}
     env_file:
       - .env
-    depends_on:
-      - redis
-      - db
     networks:
       - app-network
