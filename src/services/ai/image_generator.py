@@ -80,8 +80,8 @@ class ImageGeneratorService:
             return
 
         wait_msg = await message.edit_text(
-            chat_id=user_id,
-            text=texts.generation.wait_message(prompt, is_private)
+            text=texts.generation.wait_message(prompt, is_private),
+            reply_markup=None
         )
         images = await send_action_while_do_func(
             coroutine=coro,
