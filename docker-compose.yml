@@ -15,5 +15,3 @@ services:
       - ${APP_PORT}
     env_file:
       - .env
-    networks:
-      - app-network
