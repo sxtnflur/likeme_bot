@@ -1,0 +1,8 @@
+fal_client
+aiogram
+openai
+uvicorn
+fastapi
+yookassa-async
+python-dotenv
+Pillow
