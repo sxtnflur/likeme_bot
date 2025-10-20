@@ -4,7 +4,7 @@ from api.routers import __routers__
 from starlette.types import Lifespan
 
 
-def create_app(prefix: str, lifespan: Lifespan) -> FastAPI:
+def create_app(prefix: str, lifespan: Lifespan | None = None) -> FastAPI:
     app = FastAPI(
         root_path=prefix,
         lifespan=lifespan

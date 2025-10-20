@@ -17,6 +17,7 @@ dp.callback_query.middleware(TextsMiddleware())
 
 dp.message.middleware(MenuButtonsMiddleware())
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await onstartup(bot)
