@@ -1,8 +1,8 @@
 version: "3.9"
 
 services:
-  telegram-bot:
-    container_name: telegram-bot
+  likeme-bot:
+    container_name: likeme-bot
     working_dir: /app
     restart: always
     build:
