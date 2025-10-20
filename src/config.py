@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     BOT_TOKEN: str
     BOT_WEBHOOK_URL: str | None = None
+    API_PREFIX: str = '/api/v1'
+    BOT_WEBHOOK_ENDPOINT: str = '/webhook'
     BOT_URL: str
 
     FILES_PATH: str = '/home/cdn/leekai'
