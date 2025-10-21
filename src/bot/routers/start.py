@@ -29,12 +29,12 @@ async def start(
             language = settings.DEFAULT_LANGUAGE
 
     # user_exists = await UsersRepo(db).exists(id=m.from_user.id)
-    user_has_model = await AvatarsRepo(db).exists(user_id=m.from_user.id)
+    user_has_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id)
 
     await users_service.add_user_from_aiogram(user=m.from_user, language=language, db=db)
     texts = get_texts(language)
 
-    if user_has_model:
+    if user_has_avatar:
         await m.answer(
             texts.base.START_MESSAGE,
             reply_markup=keyboards.main_menu(texts)

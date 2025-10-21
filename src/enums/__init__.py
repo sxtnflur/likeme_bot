@@ -1,0 +1,1 @@
+from .avatars import ModelStatusType

@@ -91,6 +91,34 @@ async def select_is_private(call: CallbackQuery, texts: Texts):
     await call.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_ikb))
 
 
+@router.callback_query(keyboards.callback_datas.SelectModelCallback.filter())
+async def select_model(
+        call: CallbackQuery, texts: Texts,
+        callback_data: keyboards.callback_datas.SelectModelCallback
+):
+    if callback_data.is_selected:
+        return
+
+    new_ikb = []
+    for row in call.message.reply_markup.inline_keyboard:
+        new_row = []
+        for btn in row:
+            callback_data = keyboards.callback_datas.SelectModelCallback.from_callback_data(btn.callback_data)
+            if callback_data:
+                is_selected = not callback_data.is_selected
+                btn.callback_data = keyboards.callback_datas.SelectModelCallback(
+                    level=callback_data.level, is_selected=is_selected
+                ).pack()
+                btn.text = texts.avatar.get_model_level_name(
+                    level=callback_data.level,
+                    mark_as_chosen=callback_data.is_selected
+                )
+            new_row.append(btn)
+        new_ikb.append(new_row)
+
+    await call.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_ikb))
+
+
 @router.callback_query(keyboards.callback_datas.StartImageGenCallback.filter())
 @db_connect()
 async def start_gen(
@@ -105,11 +133,19 @@ async def start_gen(
     file_ids = data.get('create_image_file_ids', [])
 
     is_private = None
+    level = 0
     for row in call.message.reply_markup.inline_keyboard:
         for btn in row:
-            callback_data = keyboards.callback_datas.SelectIsPrivateCallback.from_callback_data(btn.callback_data)
-            if callback_data:
-                is_private = callback_data.is_private
+            private_callback_data = keyboards.callback_datas.SelectIsPrivateCallback.from_callback_data(btn.callback_data)
+            if private_callback_data:
+                is_private = private_callback_data.is_private
+                continue
+
+            model_callback_data = keyboards.callback_datas.SelectModelCallback.from_callback_data(btn.callback_data)
+            if model_callback_data and model_callback_data.is_selected:
+                level = model_callback_data.level
+
+
     if is_private is None:
         raise Exception('Не найден is_private')
 
@@ -121,5 +157,6 @@ async def start_gen(
         texts=texts,
         prompt_image_file_ids=file_ids,
         is_private=is_private,
-        session=call.bot.session._session
+        session=call.bot.session._session,
+        level=level
     )

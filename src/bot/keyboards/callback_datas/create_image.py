@@ -21,3 +21,17 @@ class SelectIsPrivateCallback(CallbackData, prefix='pregen-select-private'):
             return
         is_private = bool(int(callback_data.split(':')[1]))
         return SelectIsPrivateCallback(is_private=is_private)
+
+
+class SelectModelCallback(CallbackData, prefix='pregen-select-model'):
+    level: int
+    is_selected: bool = False
+
+    @classmethod
+    def from_callback_data(cls, callback_data: str) -> Optional['SelectModelCallback']:
+        prefix = 'pregen-select-model'
+        if not callback_data.startswith(prefix):
+            return
+        level = int(callback_data.split(':')[1])
+        is_selected = bool(int(callback_data.split(':')[2]))
+        return SelectModelCallback(level=level, is_selected=is_selected)

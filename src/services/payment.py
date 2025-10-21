@@ -1,5 +1,5 @@
 import aiogram
-from database import PaymentsRepo, UsersRepo
+from database import PaymentsRepo, UsersRepo, ModelsRepo
 from schemas.payment import ImageGenerationsBuy
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts import get_texts
@@ -17,6 +17,7 @@ class PaymentService:
             id=3, generations=15, price=500
         )
     ]
+    model_level_1_price = 1500
 
     def __init__(self, bot: aiogram.Bot):
         self.bot = bot
@@ -27,12 +28,13 @@ class PaymentService:
     async def get_image_package(self, id: int) -> ImageGenerationsBuy:
         return list(filter(lambda x: x.id == id, self.image_packages))[0]
 
-    async def on_payment(self, package_id: int, user_id: int, amount: float, db: AsyncSession) -> None:
+    async def on_payment_package(self, package_id: int, user_id: int, amount: float, db: AsyncSession) -> None:
         package = await self.get_image_package(package_id)
         await PaymentsRepo(db).add(
             user_id=user_id,
             package_id=package_id,
-            amount=amount
+            amount=amount,
+            type='package'
         )
         await UsersRepo(db).increase_field(
             filters=dict(id=user_id),
@@ -43,5 +45,18 @@ class PaymentService:
         texts = get_texts(language)
         await self.bot.send_message(
             chat_id=user_id,
-            text=texts.ON_SUCCESS_PAYMENT
+            text=texts.payment.ON_SUCCESS_PAYMENT
+        )
+
+    async def on_payment_model(self, user_id: int, amount: float, db: AsyncSession,
+                               avatar_id: int, level: int = 1) -> None:
+        await PaymentsRepo(db).add(
+            user_id=user_id,
+            amount=amount,
+            type='model'
+        )
+        await ModelsRepo(db).add(
+            avatar_id=avatar_id,
+            level=level,
+            status='paid'
         )

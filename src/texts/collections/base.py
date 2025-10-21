@@ -1,7 +1,9 @@
 import textwrap
 
+from schemas.avatars import AvatarWithModelsSchema
 from schemas.payment import GenerationsBuy
 from texts.json import TextsCollectionJson
+from typing_extensions import Literal
 
 
 class BaseTexts(TextsCollectionJson):
@@ -18,8 +20,34 @@ class AvatarTexts(TextsCollectionJson):
 
     TO_CREATE_IMAGE_BUTTON: str
 
+    AVATARS_LIST: str
+    AVATAR_PAGE: str
+    BUY_LEVEL_1_BUTTON: str
+
     def on_create_avatar(self, avatar_name: str):
         return self.ON_CREATE_AVATAR.format(avatar_name)
+
+    def get_model_level_name(self, level: Literal[0, 1], mark_as_chosen: bool = False) -> str:
+        if level == 0:
+            text = 'Simple'
+        elif level == 1:
+            text = 'Portrait'
+        else:
+            raise ValueError('level не может быть {}'.format(level))
+        if mark_as_chosen:
+            text = 'V ' + text
+        return text
+
+    def avatar_page(self, avatar: AvatarWithModelsSchema) -> str:
+        available_levels = [model.level for model in avatar.models]
+        return self.AVATAR_PAGE.format(
+            name=avatar.name,
+            models='\n'.join([
+                self.get_model_level_name(level)
+                + ' ✅' if level in available_levels else ' ❌'
+                for level in (0, 1)
+            ])
+        )
 
 
 class GenerationTexts(TextsCollectionJson):
@@ -89,6 +117,8 @@ class PaymentTexts(TextsCollectionJson):
     PAY_BUTTON: str = 'Оплатить'
     ON_SUCCESS_PAYMENT: str
 
+    BUY_LEVEL_1: str
+
     def buy_start(self, my_image_generations: int):
         return self.BUY_START.format(my_image_generations)
 
@@ -99,6 +129,9 @@ class PaymentTexts(TextsCollectionJson):
 
     def select_package(self, obj: GenerationsBuy):
         return self.SELECT_PACKAGE
+
+    def buy_model_level_1(self, price: int) -> str:
+        return self.BUY_LEVEL_1.format(price)
 
 
 class MainMenuButtons(TextsCollectionJson):
