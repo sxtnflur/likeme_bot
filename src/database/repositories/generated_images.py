@@ -41,17 +41,17 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
         if limit:
             stmt = stmt.limit(limit)
 
-        if strategy == FeedOrdering.new:
+        if ordering == FeedOrdering.new:
             stmt = stmt.order_by(desc(self.model.created_at))
 
-        elif strategy == FeedOrdering.top:
+        elif ordering == FeedOrdering.top:
             # Предполагаем, что у вас есть поля для оценки популярности
             stmt = stmt.order_by(
                 desc(self.model.likes_count),  # или views_count, rating и т.д.
                 desc(self.model.created_at)  # второстепенная сортировка по новизне
             )
 
-        elif strategy == FeedOrdering.all:
+        elif ordering == FeedOrdering.all:
             # Более сложная логика - комбинация популярности и новизны
             # Например: популярность * коэффициент новизны
             stmt = stmt.order_by(
