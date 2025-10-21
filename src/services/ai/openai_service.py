@@ -162,7 +162,7 @@ class OpenAIService:
             photo_urls: list[str], caption: str | None = None,
              messages: Iterable[ChatCompletionMessageParam] | None = None,
              model: str | None = None,
-            **kwargs) -> GPTSchemaResponse[TSchema]:
+            **kwargs) -> TSchema:
         msgs = messages or []
         user_content = self.create_images_content(photo_urls, caption)
         msgs.append(self.text_to_user_message(user_content))
@@ -172,7 +172,4 @@ class OpenAIService:
             model=model or self.default_model,
             **kwargs
         )
-        return GPTSchemaResponse[GPTSchemaResponse](
-            prompt=user_content,
-            answer=resp.choices[0].message.parsed
-        )
+        return resp.choices[0].message.parsed
