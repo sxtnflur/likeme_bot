@@ -16,6 +16,8 @@ class GeneratedImage(Base):
     created_at: Mapped[CreatedAt]
 
     user = relationship('User', foreign_keys=[user_id])
+    categories = relationship('Category', secondary='generated_images_categories', uselist=True)
+    categories_secondary = relationship('GeneratedImageCategory', back_populates='image')
 
 
 class Like(Base):

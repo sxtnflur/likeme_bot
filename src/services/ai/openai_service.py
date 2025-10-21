@@ -1,7 +1,8 @@
-from schemas.gpt import GPTResponse
+from pydantic import BaseModel
+from schemas.gpt import GPTResponse, GPTSchemaResponse, TSchema
 from openai import AsyncOpenAI, NOT_GIVEN
 from openai.types.chat import ChatCompletionMessageParam
-from typing_extensions import Iterable
+from typing_extensions import Iterable, TypeVar
 import os
 
 
@@ -27,6 +28,25 @@ class OpenAIService:
         if self.system_prompt:
             messages = [self.text_to_system_message(self.system_prompt)] + messages
         resp = await self.client.chat.completions.create(
+            messages=messages,
+            model=model or self.default_model,
+            max_tokens=max_tokens or self.default_max_tokens or NOT_GIVEN,
+            max_completion_tokens=max_completion_tokens or self.default_max_completition_tokens or NOT_GIVEN,
+            **kwargs
+        )
+        print(f'{resp=}')
+        return resp
+
+    async def _send_completition_get_schema(self, messages: list[ChatCompletionMessageParam],
+                                 schema: type[TSchema],
+                                 model: str | None = None,
+                                 max_tokens: int | None = None,
+                                 max_completion_tokens: int | None = None,
+                                 **kwargs) -> TSchema:
+        if self.system_prompt:
+            messages = [self.text_to_system_message(self.system_prompt)] + messages
+        resp = await self.client.chat.completions.parse(
+            response_format=schema,
             messages=messages,
             model=model or self.default_model,
             max_tokens=max_tokens or self.default_max_tokens or NOT_GIVEN,
@@ -134,4 +154,25 @@ class OpenAIService:
         return GPTResponse(
             text_prompt=user_content,
             text_answer=resp.choices[0].message.content
+        )
+
+    async def send_images_get_schema(
+            self,
+            schema: type[TSchema],
+            photo_urls: list[str], caption: str | None = None,
+             messages: Iterable[ChatCompletionMessageParam] | None = None,
+             model: str | None = None,
+            **kwargs) -> GPTSchemaResponse[TSchema]:
+        msgs = messages or []
+        user_content = self.create_images_content(photo_urls, caption)
+        msgs.append(self.text_to_user_message(user_content))
+        resp = await self._send_completition_get_schema(
+            schema=schema,
+            messages=msgs,
+            model=model or self.default_model,
+            **kwargs
+        )
+        return GPTSchemaResponse[GPTSchemaResponse](
+            prompt=user_content,
+            answer=resp.choices[0].message.parsed
         )
