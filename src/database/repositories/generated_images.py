@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from sqlalchemy import select, desc, func
+from sqlalchemy import select, desc, func, case
 from sqlalchemy.orm import selectinload
 from .base import BaseRepo
 from ..models.generated_images import GeneratedImage, Like
@@ -73,10 +73,18 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
                 .subquery()
             )
 
-            # Используем логарифмическую шкалу времени для избежания underflow
-            time_diff_hours = func.extract('epoch', func.now() - self.model.created_at) / 3600
-            # Формула: лайки / (1 + время_в_часах^1.5) - популярность со временем убывает
-            score = func.coalesce(likes_subquery.c.likes_count, 0) / (1 + func.pow(time_diff_hours, 1.5))
+            # Комбинируем популярность и новизну через CASE для полного контроля
+            time_diff_days = func.extract('epoch', func.now() - self.model.created_at) / (24 * 3600)
+
+            # Вес в зависимости от возраста записи
+            time_weight = case(
+                (time_diff_days <= 1, 1.0),  # Меньше 1 дня - полный вес
+                (time_diff_days <= 7, 0.7),  # 1-7 дней - 70% веса
+                (time_diff_days <= 30, 0.3),  # 1-30 дней - 30% веса
+                else_=0.1  # Старше 30 дней - 10% веса
+            )
+
+            score = func.coalesce(likes_subquery.c.likes_count, 0) * time_weight
 
             stmt = (
                 stmt
