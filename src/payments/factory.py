@@ -35,6 +35,7 @@ class PaymentFactory:
                              ) -> PaymentData:
         return await self.payment_methods_objs[payment_method].create_payment(
             amount, description, test, expired_date=expired_date,
+            metadata=metadata,
             session=session
         )
 

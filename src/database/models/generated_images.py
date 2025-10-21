@@ -12,9 +12,11 @@ class GeneratedImage(Base):
     prompt: Mapped[str] = mapped_column(TEXT)
     prompt_images: Mapped[list[str] | None] = mapped_column(ARRAY(String))
     is_private: Mapped[bool] = mapped_column(server_default='False')
+    model_id: Mapped[int] = mapped_column(ForeignKey('models.id'))
     created_at: Mapped[CreatedAt]
 
     user = relationship('User', foreign_keys=[user_id])
+    model = relationship('Model', foreign_keys=[model_id])
     categories = relationship('Category', secondary='generated_images_categories', uselist=True)
     categories_secondary = relationship('GeneratedImageCategory', back_populates='image')
 

@@ -42,3 +42,12 @@ def image_package(pay_url: str, texts: Texts):
             callback_data=BuyImageGenerationsCallback().pack()
         )]
     ])
+
+
+def buy_model_level_1(pay_url: str, texts: Texts):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=texts.payment.PAY_BUTTON,
+            url=pay_url
+        )]
+    ])
