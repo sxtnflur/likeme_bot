@@ -113,17 +113,21 @@ class ImageGeneratorService:
                 folder=f'/generated_images/{user_id}'
             )
 
-            await GeneratedImagesRepo(db).add(
-                user_id=user_id,
-                image_url=res_image_url,
-                prompt=prompt,
-                prompt_images=prompt_images,
-                is_private=is_private
+            image_id = await GeneratedImagesRepo(db).add_and_get(
+                dict(
+                    user_id=user_id,
+                    image_url=res_image_url,
+                    prompt=prompt,
+                    prompt_images=prompt_images,
+                    is_private=is_private
+                ),
+                get_field='id'
             )
 
             categories = await self.categories_service.generate_categories_for_image(
                 image_url=res_image_url
             )
             await GeneratedImagesCategoriesRepo(db).add_all(
-                list(map(lambda key: dict(key=key), categories))
+                list(map(lambda key: dict(category_key=key,
+                                          image_id=image_id), categories))
             )
