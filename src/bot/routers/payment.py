@@ -68,7 +68,8 @@ async def select_image_generations(
         session=call.bot.session._session,
         metadata={
             'type': 'package',
-            'package_id': package.id
+            'package_id': package.id,
+            'user_id': call.from_user.id
         }
     )
     await call.message.edit_text(
@@ -91,7 +92,9 @@ async def buy_model(
         session=call.bot.session._session,
         metadata={
             'type': 'model',
-            'model_level': 1
+            'model_level': 1,
+            'avatar_id': callback_data.avatar_id,
+            'user_id': call.from_user.id
         }
     )
     await call.message.answer(

@@ -8,5 +8,6 @@ class Payment(Base):
 
     id: Mapped[IntPk]
     user_id: Mapped[TgId] = mapped_column(ForeignKey('users.id'))
+    amount: Mapped[float]
     package_id: Mapped[int | None]
     type: Mapped[str] = mapped_column(server_default='package')

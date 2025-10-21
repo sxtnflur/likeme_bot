@@ -43,6 +43,7 @@ def avatars_list(
 
 def avatar_page(
     texts: Texts,
+    avatar_id: int,
     models: list[Model]
 ) -> InlineKeyboardMarkup:
     ikb = []
@@ -51,7 +52,7 @@ def avatar_page(
         ikb.append([
             InlineKeyboardButton(
                 text=texts.avatar.BUY_LEVEL_1_BUTTON,
-                callback_data=BuyModelCallback(level=1).pack()
+                callback_data=BuyModelCallback(avatar_id=avatar_id, level=1).pack()
             )
         ])
     elif model_lvl1:

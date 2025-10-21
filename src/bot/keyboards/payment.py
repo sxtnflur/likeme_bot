@@ -45,4 +45,9 @@ def image_package(pay_url: str, texts: Texts):
 
 
 def buy_model_level_1(pay_url: str, texts: Texts):
-    return image_package(pay_url, texts)
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=texts.payment.PAY_BUTTON,
+            url=pay_url
+        )]
+    ])

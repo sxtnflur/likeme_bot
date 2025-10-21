@@ -10,4 +10,5 @@ class SelectImageGenerationsCallback(CallbackData, prefix='select-image-package'
 
 
 class BuyModelCallback(CallbackData, prefix='buy-model'):
+    avatar_id: int
     level: int = 1

@@ -144,7 +144,7 @@ async def select_avatar(
     await call.message.edit_text(
         texts.avatar.avatar_page(avatar),
         reply_markup=keyboards.avatar_page(
-            texts=texts, models=avatar.models
+            texts=texts, avatar_id=avatar.id, models=avatar.models
         )
     )
 
