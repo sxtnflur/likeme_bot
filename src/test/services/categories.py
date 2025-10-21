@@ -1,6 +1,8 @@
 import asyncio
 import unittest
 
+from database import GeneratedImagesCategoriesRepo
+from database.engine import async_session
 from depends import openai_service
 from services.categories import CategoriesService
 
@@ -14,4 +16,17 @@ class TestCategories(unittest.TestCase):
                 image_url=url
             )
             print(f'{res=}')
+        asyncio.get_event_loop().run_until_complete(do())
+
+    def test_add_categories(self):
+        async def do():
+            image_id = 2
+            categories = ['memes', 'celebrities']
+            async with async_session() as db:
+                await GeneratedImagesCategoriesRepo(db).add_all(
+                    list(map(lambda key: dict(category_key=key,
+                                              image_id=image_id), categories))
+                )
+                await db.commit()
+
         asyncio.get_event_loop().run_until_complete(do())
