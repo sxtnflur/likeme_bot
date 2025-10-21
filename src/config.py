@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pydantic.v1 import BaseSettings
@@ -29,6 +30,8 @@ class Settings(BaseSettings):
     FILES_PATH: str = '/home/cdn/leekai'
     FILES_BASE_URL: str
 
+    FAL_KEY: str
+
 
 def get_env_path():
     possible_paths = [
@@ -51,3 +54,6 @@ def get_env_path():
 
 
 settings = Settings(_env_file=get_env_path())
+
+
+os.environ.setdefault('FAL_KEY', settings.FAL_KEY)
