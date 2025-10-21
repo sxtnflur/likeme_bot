@@ -9,11 +9,11 @@ class FeedUseCase:
         self.db = db
 
     async def get_feed(
-        self, stategy: FeedOrdering = FeedOrdering.all, offset: int = 0, limit: int = 50
+        self, ordering: FeedOrdering = FeedOrdering.all, offset: int = 0, limit: int = 50
     ) -> list[FeedPost]:
         posts = await GeneratedImagesRepo(self.db).get_list_with_user(
             filters=dict(is_private=False),
-            strategy=stategy,
+            ordering=ordering,
             offset=offset,
             limit=limit
         )

@@ -17,7 +17,7 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
 
     async def get_list_with_user(
             self, filters: dict,
-            strategy: FeedOrdering = FeedOrdering.all,
+            ordering: FeedOrdering = FeedOrdering.all,
             offset: int | None = None,
             limit: int | None = None
     ) -> list[GeneratedImage]:
