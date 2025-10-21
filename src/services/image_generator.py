@@ -1,14 +1,10 @@
 import datetime
-
 import aiogram
 import aiohttp
-from PIL import Image
-import io
-
 from aiogram.types import Message
-from services.storage import BaseStorage
+from services.categories import CategoriesService
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import UsersRepo, AvatarsRepo, GeneratedImagesRepo
+from database import UsersRepo, AvatarsRepo, GeneratedImagesRepo, GeneratedImagesCategoriesRepo
 from services.ai.fal import nanobanana
 from texts import Texts
 from utils.convert import image_url_to_pil, image_file_id_to_pil
@@ -17,9 +13,11 @@ from services.storage.base import BaseStorage
 
 
 class ImageGeneratorService:
-    def __init__(self, bot: aiogram.Bot, file_storage: BaseStorage):
+    def __init__(self, bot: aiogram.Bot, file_storage: BaseStorage,
+                 categories_service: CategoriesService):
         self.bot = bot
         self.storage = file_storage
+        self.categories_service = categories_service
 
     async def generate_image(self,
                              message: Message,
@@ -106,10 +104,18 @@ class ImageGeneratorService:
                 filename=f'{datetime.datetime.utcnow().timestamp().hex()}.jpg',
                 folder=f'/generated_images/{user_id}'
             )
+
             await GeneratedImagesRepo(db).add(
                 user_id=user_id,
                 image_url=res_image_url,
                 prompt=prompt,
                 prompt_images=prompt_images,
                 is_private=is_private
+            )
+
+            categories = await self.categories_service.generate_categories_for_image(
+                image_url=res_image_url
+            )
+            await GeneratedImagesCategoriesRepo(db).add_all(
+                list(map(lambda key: dict(key=key), categories))
             )

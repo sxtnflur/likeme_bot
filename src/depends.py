@@ -2,7 +2,8 @@ from bot.loader import bot
 from config import settings
 from openai import AsyncOpenAI
 from payments import YooKassaService, PaymentFactory
-from services.ai.image_generator import ImageGeneratorService
+from services.categories import CategoriesService
+from services.image_generator import ImageGeneratorService
 from services.ai.openai_service import OpenAIService
 from services.avatars_service import AvatarsService
 from services.payment import PaymentService
@@ -32,11 +33,14 @@ openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
 openai_service = OpenAIService(
     openai_client=openai_client,
-    default_model='gpt-4.1',
+    default_model='gpt-4.1-mini',
     default_max_tokens=2000
 )
 
-image_generator_service = ImageGeneratorService(bot=bot, file_storage=files_storage)
+categories_service = CategoriesService(openai=openai_service)
+
+image_generator_service = ImageGeneratorService(bot=bot, file_storage=files_storage,
+                                                categories_service=categories_service)
 
 
 avatars_service = AvatarsService(bot=bot, storage=files_storage)

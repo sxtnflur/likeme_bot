@@ -15,6 +15,9 @@ class BaseRepo(Protocol[T]):
     async def add(self, **vals) -> None:
         self.db.add(self.model(**vals))
 
+    async def add_all(self, objs: list[dict]) -> None:
+        self.db.add_all(list(map(self.model(**objs))))
+
     async def add_or_update(self, values: dict, not_update: list[str], on_conflict: list[str]) -> None:
         keys = list(values.keys())
         fields = ', '.join(keys)
