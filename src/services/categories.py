@@ -44,6 +44,6 @@ class CategoriesService:
                 '''}],
             model='gpt-4.1-mini'
         )
-        keys = list(map(lambda x: str(x.name), res.answer.categories))
+        keys = list(map(lambda x: str(x.name), res.categories))
         print(f'{keys=}')
         return keys
