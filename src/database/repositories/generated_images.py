@@ -1,8 +1,10 @@
 from enum import StrEnum
 
+from services.categories import CategoriesEnum
 from sqlalchemy import select, desc, func, case
 from sqlalchemy.orm import selectinload
 from .base import BaseRepo
+from ..models.categories import GeneratedImageCategory
 from ..models.generated_images import GeneratedImage, Like
 
 
@@ -15,9 +17,10 @@ class FeedOrdering(StrEnum):
 class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
     model = GeneratedImage
 
-    async def get_list_with_user(
+    async def get_feed(
             self, filters: dict,
             ordering: FeedOrdering = FeedOrdering.all,
+            categories: list[CategoriesEnum] | None = None,
             offset: int | None = None,
             limit: int | None = None
     ) -> list[GeneratedImage]:
@@ -40,6 +43,12 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
             stmt = stmt.offset(offset)
         if limit:
             stmt = stmt.limit(limit)
+
+        if categories:
+            stmt = (
+                stmt.join(self.model.categories_secondary)
+                .filter(GeneratedImageCategory.category_key.in_(categories))
+            )
 
         if ordering == FeedOrdering.new:
             stmt = stmt.order_by(desc(self.model.created_at))

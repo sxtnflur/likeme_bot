@@ -113,19 +113,13 @@ async def start_gen(
     if is_private is None:
         raise Exception('Не найден is_private')
 
-    try:
-        await image_generator_service.generate_image(
-            message=call.message,
-            user_id=call.from_user.id,
-            prompt=prompt,
-            db=db,
-            texts=texts,
-            prompt_image_file_ids=file_ids,
-            is_private=is_private,
-            session=call.bot.session._session
-        )
-    except Exception as e:
-        await call.message.answer(
-            text=texts.generation.ON_FAILED_GENERATION
-        )
-        raise e
+    await image_generator_service.generate_image(
+        message=call.message,
+        user_id=call.from_user.id,
+        prompt=prompt,
+        db=db,
+        texts=texts,
+        prompt_image_file_ids=file_ids,
+        is_private=is_private,
+        session=call.bot.session._session
+    )
