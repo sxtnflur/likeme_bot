@@ -19,6 +19,6 @@ async def get_feed(
 ) -> list[FeedPost]:
     return await feed_use_case.get_feed(
         ordering=ordering,
-        categories=[category],
+        categories=[category] if category else None,
         offset=offset, limit=limit
     )
