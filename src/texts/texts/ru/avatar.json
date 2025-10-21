@@ -4,6 +4,6 @@
     "INPUT_MY_NAME_FOR_MODEL": "Вставить мое имя",
     "TO_CREATE_IMAGE_BUTTON": "Создать фото",
     "AVATARS_LIST": "<i>Ваши аватары:</i>",
-    "AVATAR_PAGE": "<b>Аватар:</b> <i>{name}</i>\n<b>Доступные модели:</b> <i>{models}</i>",
+    "AVATAR_PAGE": "<b>Аватар:</b> <i>{name}</i>\n<b>Доступные модели:</b>\n<i>{models}</i>",
     "BUY_LEVEL_1_BUTTON": "Купить модель Portrait"
 }

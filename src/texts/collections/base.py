@@ -44,7 +44,7 @@ class AvatarTexts(TextsCollectionJson):
             name=avatar.name,
             models='\n'.join([
                 self.get_model_level_name(level)
-                + ' ✅' if level in available_levels else ' ❌'
+                + (' ✅' if level in available_levels else ' ❌')
                 for level in (0, 1)
             ])
         )

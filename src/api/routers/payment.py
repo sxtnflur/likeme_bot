@@ -13,7 +13,7 @@ async def pay_yookassa(
     body = await request.body()
     payload: WebhookPayload = WebhookPayload.parse_raw(body)
     await payments_use_case.on_payment(
-        amount=payload.object.amount,
+        amount=payload.object.amount.value,
         metadata=payload.object.metadata
     )
     return {
