@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic.v1 import BaseSettings
 
 
@@ -28,4 +30,24 @@ class Settings(BaseSettings):
     FILES_BASE_URL: str
 
 
-settings = Settings(_env_file='.env')
+def get_env_path():
+    possible_paths = [
+        # Для локальной разработки
+        Path(__file__).parent.parent / '.env',
+        # Для Docker (если .env копируется в /app)
+        Path('/app/.env'),
+        # Для случаев когда .env в той же директории
+        Path(__file__).parent / '.env',
+        # Текущая рабочая директория
+        Path.cwd() / '.env',
+    ]
+
+    for env_path in possible_paths:
+        if env_path.exists():
+            print(f"Loaded .env from: {env_path}")
+            return env_path
+    else:
+        print("Warning: .env file not found in any expected location")
+
+
+settings = Settings(_env_file=get_env_path())
