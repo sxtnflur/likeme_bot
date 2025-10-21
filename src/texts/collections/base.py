@@ -39,12 +39,14 @@ class AvatarTexts(TextsCollectionJson):
         return text
 
     def avatar_page(self, avatar: AvatarWithModelsSchema) -> str:
+        available_levels = [model.level for model in avatar.models]
         return self.AVATAR_PAGE.format(
             name=avatar.name,
-            models=', '.join(list(map(
-                lambda model: self.get_model_level_name(model.level),
-                avatar.models
-            )))
+            models='\n'.join([
+                self.get_model_level_name(level)
+                + ' ✅' if level in available_levels else ' ❌'
+                for level in (0, 1)
+            ])
         )
 
 

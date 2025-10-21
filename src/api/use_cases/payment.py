@@ -12,15 +12,16 @@ class PaymentUseCase:
         match metadata['type']:
             case 'package':
                 await self.payment_service.on_payment_package(
-                    metadata['package_id'], user_id=metadata['user_id'],
+                    int(metadata['package_id']),
+                    user_id=int(metadata['user_id']),
                     amount=amount,
                     db=self.db
                 )
 
             case 'model':
                 await self.payment_service.on_payment_model(
-                    user_id=metadata['user_id'],
-                    avatar_id=metadata['avatar_id'],
+                    user_id=int(metadata['user_id']),
+                    avatar_id=int(metadata['avatar_id']),
                     amount=amount,
                     db=self.db
                 )
