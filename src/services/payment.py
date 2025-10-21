@@ -1,4 +1,5 @@
 import aiogram
+from bot import keyboards
 from database import PaymentsRepo, UsersRepo, ModelsRepo
 from schemas.payment import ImageGenerationsBuy
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -55,8 +56,20 @@ class PaymentService:
             amount=amount,
             type='model'
         )
-        await ModelsRepo(db).add(
-            avatar_id=avatar_id,
+        model_id = await ModelsRepo(db).add_and_get(
+            dict(avatar_id=avatar_id,
             level=level,
-            status='paid'
+            status='paid'),
+            'id'
+        )
+        language = await UsersRepo(db).get_one_field('language', id=user_id)
+        texts = get_texts(language)
+        await self.bot.send_message(
+            chat_id=user_id,
+            text=texts.payment.ON_SUCCESS_PAYMENT,
+            reply_markup=keyboards.on_success_payment_model(
+                model_id=model_id,
+                texts=texts,
+                level=level
+            )
         )

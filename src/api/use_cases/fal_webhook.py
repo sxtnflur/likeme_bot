@@ -11,18 +11,18 @@ class FalWebhookUseCase:
         self.db = db
         self.avatars_service = avatars_service
 
-    async def on_created_model(self, body: dict) -> None:
-        print(f'{body=}')
-        request_id: str = str(body['request_id'])
-        status: str = body['status']
-        diffusers_url = body["payload"]["diffusers_lora_file"]["url"]
+    async def on_created_model(self, data: dict) -> None:
+        print(f'{data=}')
+        request_id: str = str(data['request_id'])
+        status: str = data['status']
+        diffusers_url = data["payload"]["diffusers_lora_file"]["url"]
 
         if status != 'OK':
             return
 
-        data = await FalRequestsRepo(db=self.db).get_one(id=request_id)
+        metadata = await FalRequestsRepo(db=self.db).get_one_field('data', id=request_id)
 
-        model_id = data['model_id']
+        model_id = metadata['model_id']
         print(f'{model_id=}')
 
         await self.avatars_service.add_modeling_model_to_avatar(

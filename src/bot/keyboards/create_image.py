@@ -8,7 +8,8 @@ from texts import Texts
 def to_create_image(texts: Texts):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
-            text=texts.generation.GENERATE_BUTTON
+            text=texts.generation.GENERATE_BUTTON,
+            callback_data='create_image'
         )]
     ])
 

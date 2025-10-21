@@ -11,7 +11,7 @@ from texts.base import get_main_menu_button, Texts
 from bot.states.create_image import CreateImageStates
 
 router = Router()
-router.message.middleware(MediaMiddleware(latency=1))
+router.message.middleware(MediaMiddleware(latency=5))
 
 
 @router.message(F.text.in_(get_main_menu_button('CREATE_IMAGE')))

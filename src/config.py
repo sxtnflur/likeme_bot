@@ -35,6 +35,7 @@ class Settings(BaseSettings):
 
 def get_env_path():
     possible_paths = [
+        Path('.env'),
         # Для локальной разработки
         Path(__file__).parent.parent / '.env',
         # Для Docker (если .env копируется в /app)

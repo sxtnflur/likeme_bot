@@ -193,7 +193,8 @@ async def get_photos_to_model(
     await avatars_service.create_modeling_model(
         user_id=m.from_user.id,
         file_ids=list(map(lambda x: x.photo[-1].file_id, media_group)),
-        model_id=model_id
+        model_id=model_id,
+        db=db
     )
 
     await m.answer(

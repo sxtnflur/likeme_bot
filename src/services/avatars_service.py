@@ -46,6 +46,7 @@ class AvatarsService:
             user_id=user_id, bot=self.bot,
             file_ids=file_ids
         )
+        print(f'{zip_url=}')
         req_id = await train_lora(zip_url)
         print(f'{req_id=}')
         await FalRequestsRepo(db).add(

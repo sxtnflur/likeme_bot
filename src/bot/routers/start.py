@@ -1,17 +1,31 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from bot import keyboards
+from bot.middlewares.media_group import MediaMiddleware
 from bot.states import NanobananaAvatarStates
 from config import settings
 from database import db_connect, UsersRepo
 from depends import users_service
+from services.ai.fal import upload_zip_by_file_ids
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts import Texts, get_texts
 from database.repositories import AvatarsRepo
 
 router = Router()
+# router.message.middleware(MediaMiddleware(4))
+#
+#
+# @router.message(F.photo)
+# async def get_test_photos(m: Message, media_group: list[Message] = None):
+#     print(f'{len(media_group)=}')
+#     zip_url = await upload_zip_by_file_ids(
+#         file_ids=list(map(lambda x: x.photo[-1].file_id, media_group)),
+#         user_id=m.from_user.id,
+#         bot=m.bot
+#     )
+#     print(f'{zip_url=}')
 
 
 @router.message(CommandStart())

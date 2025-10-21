@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from schemas.payment import ImageGenerationsBuy
 from texts import Texts
+from . import LoadPhotosToModelCallback
 from .base import create_list_kb
 from .callback_datas.payment import BuyImageGenerationsCallback, PaymentStartCallback, SelectImageGenerationsCallback
 
@@ -50,4 +51,13 @@ def buy_model_level_1(pay_url: str, texts: Texts):
             text=texts.payment.PAY_BUTTON,
             url=pay_url
         )]
+    ])
+
+
+def on_success_payment_model(model_id: int, texts: Texts, level: int = 1):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+                    text='Загрузить мои фото в Portrait',
+                    callback_data=LoadPhotosToModelCallback(model_id=model_id).pack()
+                )]
     ])

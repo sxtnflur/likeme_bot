@@ -9,5 +9,5 @@ async def train_model(
     request: Request,
     fal_use_case: FalWebhookUseCase
 ) -> dict:
-    await fal_use_case.on_created_model(body=await request.body())
+    await fal_use_case.on_created_model(await request.json())
     return {"ok": True}
