@@ -1,5 +1,5 @@
 from database.models.base import Base
-from sqlalchemy import delete, select, update, exists, insert, text
+from sqlalchemy import delete, select, update, exists, insert, text, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing_extensions import TypeVar, Protocol
 

@@ -20,7 +20,7 @@ async def create_simple_avatar(
     file_id = m.photo[-1].file_id
     await state.update_data(nano_avatar_id=file_id)
 
-    if not await AvatarsRepo(db).exists(id=m.from_user.id, name=m.from_user.full_name):
+    if not await AvatarsRepo(db).exists(user_id=m.from_user.id, name=m.from_user.full_name):
         reply_markup = keyboards.input_simple_avatar_name(texts)
     else:
         reply_markup = None
