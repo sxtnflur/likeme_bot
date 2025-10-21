@@ -42,3 +42,7 @@ def image_package(pay_url: str, texts: Texts):
             callback_data=BuyImageGenerationsCallback().pack()
         )]
     ])
+
+
+def buy_model_level_1(pay_url: str, texts: Texts):
+    return image_package(pay_url, texts)

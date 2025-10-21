@@ -10,6 +10,7 @@ from texts import Texts
 from utils.convert import image_url_to_pil, image_file_id_to_pil
 from utils.do_while import send_action_while_do_func
 from services.storage.base import BaseStorage
+from services.ai.fal import flux
 
 
 class ImageGeneratorService:
@@ -23,11 +24,13 @@ class ImageGeneratorService:
                              message: Message,
                              user_id: int,
                              prompt: str,
-                             db: AsyncSession, texts: Texts,
+                             db: AsyncSession,
+                             texts: Texts,
                              prompt_image_file_ids: list[str],
                              is_private: bool,
-                             session: aiohttp.ClientSession
-                             ):
+                             session: aiohttp.ClientSession,
+                             model_level: int = 0
+                             ) -> None:
         try:
             try:
                 updated_generations = await UsersRepo(db).decrease_field(
@@ -51,8 +54,11 @@ class ImageGeneratorService:
                 return
 
             prompt_images = None
-            if avatar.photos:
-                images = [await image_url_to_pil(str(avatar.photos[0]), session=session)]
+            model = list(filter(lambda x: x.level == model_level, avatar.models))[0]
+            if model_level == 0:
+                if not model.photos:
+                    raise Exception('Нет photos')
+                images = [await image_url_to_pil(str(model.photos[0]), session=session)]
                 if prompt_image_file_ids:
                     prompt_images = [
                         await image_file_id_to_pil(file_id, bot=self.bot)
@@ -65,12 +71,14 @@ class ImageGeneratorService:
                     images=images,
                     num_images=1
                 )
-            elif avatar.model:
-                await self.bot.send_message(
-                    chat_id=user_id,
-                    text=texts.generation.UNPREDICTABLE_ERROR
+            elif model_level == 1:
+                if not model.diffusers_url:
+                    raise Exception('Нет diffusers_url')
+                coro = flux.generate_images(
+                    prompt,
+                    lora=model.diffusers_url,
+                    photo_format=(0, 0)
                 )
-                return
             else:
                 await self.bot.send_message(
                     chat_id=user_id,
@@ -116,6 +124,7 @@ class ImageGeneratorService:
             image_id = await GeneratedImagesRepo(db).add_and_get(
                 dict(
                     user_id=user_id,
+                    model_id=model.id,
                     image_url=res_image_url,
                     prompt=prompt,
                     prompt_images=prompt_images,
