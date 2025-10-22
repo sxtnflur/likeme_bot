@@ -5,6 +5,7 @@ from bot import keyboards
 from bot.middlewares.media_group import MediaMiddleware
 from database import db_connect, UsersRepo, AvatarsRepo
 from depends import image_generator_service
+from enums.generation import AspectRatio
 from schemas.avatars import AvatarSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts.base import get_main_menu_button, Texts
@@ -96,26 +97,141 @@ async def select_model(
         call: CallbackQuery, texts: Texts,
         callback_data: keyboards.callback_datas.SelectModelCallback
 ):
-    if callback_data.is_selected:
+    try:
+        if callback_data.is_selected:
+            await call.answer(cache_time=3)
+            return
+
+        new_ikb = []
+        for row in call.message.reply_markup.inline_keyboard:
+            new_row = []
+            for btn in row:
+                btn_callback_data = keyboards.callback_datas.SelectModelCallback.from_callback_data(btn.callback_data)
+                if btn_callback_data:
+                    is_selected = btn_callback_data == callback_data
+                    btn.callback_data = keyboards.callback_datas.SelectModelCallback(
+                        level=btn_callback_data.level, is_selected=is_selected
+                    ).pack()
+                    btn.text = texts.avatar.get_model_level_name(
+                        level=btn_callback_data.level,
+                        mark_as_chosen=is_selected
+                    )
+                new_row.append(btn)
+            new_ikb.append(new_row)
+
+        await call.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_ikb))
+    except Exception as e:
+        await call.answer(text=texts.generation.MODEL_NOT_AVAILABLE_NOW, cache_time=3,
+                          show_alert=True)
+        raise e
+
+
+@router.callback_query(keyboards.callback_datas.SelectedAvatarForGenCallback.filter())
+@db_connect()
+async def selected_avatar_for_gen(
+    call: CallbackQuery,
+    callback_data: keyboards.callback_datas.SelectedAvatarForGenCallback,
+    db: AsyncSession,
+    texts: Texts
+):
+    avatars = await AvatarsRepo(db).get_list(filters=dict(user_id=call.from_user.id))
+    avatars = list(map(AvatarSchema.model_validate, avatars))
+    if len(avatars) <= 1:
+        await call.answer(
+            text=texts.generation.YOU_HAVE_ONLY_ONE_AVATAR,
+            cache_time=3
+        )
         return
+
+    await call.message.edit_text(
+        text='<i>Выберите аватар для генерации:</i>',
+        reply_markup=keyboards.select_avatar_for_gen(
+            avatars, texts
+        )
+    )
+
+
+@router.callback_query(keyboards.callback_datas.SelectAvatarForGenCallback.filter())
+@db_connect()
+async def select_avatar_for_gen(
+    call: CallbackQuery,
+    callback_data: keyboards.callback_datas.SelectAvatarForGenCallback,
+    state: FSMContext,
+    db: AsyncSession,
+    texts: Texts
+):
+    try:
+        data = await state.get_data()
+        prompt = data.get('create_image_prompt')
+        file_ids = data.get('create_image_file_ids')
+        chosen_avatar = await AvatarsRepo(db).get_one(id=callback_data.avatar_id)
+
+        await call.message.edit_text(
+            texts.generation.pre_create_image(prompt=prompt,
+                                              has_images=bool(file_ids),
+                                              chosen_avatar_name=chosen_avatar.name),
+            reply_markup=keyboards.pre_generate_image(
+                has_prompt=bool(prompt), has_images=bool(file_ids),
+                chosen_avatar=chosen_avatar,
+                texts=texts
+            )
+        )
+    except Exception as e:
+        await call.answer(text=texts.generation.AVATAR_NOT_AVAILABLE_NOW, cache_time=3,
+                          show_alert=True)
+        raise e
+
+
+@router.callback_query(keyboards.callback_datas.BackToCreatingImageCallback.filter())
+@db_connect()
+async def back_to_creating_image(
+    call: CallbackQuery,
+    state: FSMContext,
+    db: AsyncSession,
+    texts: Texts
+):
+    data = await state.get_data()
+    prompt = data.get('create_image_prompt')
+    file_ids = data.get('create_image_file_ids')
+    chosen_avatar = data.get('create_image_chosen_avatar')
+
+    if not chosen_avatar:
+        chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=call.from_user.id)
+        chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
+        await state.update_data(create_image_chosen_avatar=chosen_avatar)
+
+    await call.message.edit_text(
+        texts.generation.pre_create_image(prompt=prompt,
+                                          has_images=bool(file_ids),
+                                          chosen_avatar_name=chosen_avatar.name),
+        reply_markup=keyboards.pre_generate_image(
+            has_prompt=bool(prompt), has_images=bool(file_ids),
+            chosen_avatar=chosen_avatar,
+            texts=texts
+        )
+    )
+
+
+@router.callback_query(keyboards.callback_datas.SelectRatioCallback.filter())
+async def select_ratio(
+    call: CallbackQuery,
+    callback_data: keyboards.callback_datas.SelectRatioCallback,
+    texts: Texts
+):
+    print('SELECT RATIO')
+    ratio = AspectRatio(callback_data.ratio).next()
+    print(f'{ratio=}')
 
     new_ikb = []
     for row in call.message.reply_markup.inline_keyboard:
         new_row = []
         for btn in row:
-            callback_data = keyboards.callback_datas.SelectModelCallback.from_callback_data(btn.callback_data)
-            if callback_data:
-                is_selected = not callback_data.is_selected
-                btn.callback_data = keyboards.callback_datas.SelectModelCallback(
-                    level=callback_data.level, is_selected=is_selected
-                ).pack()
-                btn.text = texts.avatar.get_model_level_name(
-                    level=callback_data.level,
-                    mark_as_chosen=callback_data.is_selected
-                )
+            ratio_callback_data = keyboards.callback_datas.SelectRatioCallback.from_callback_data(btn.callback_data)
+            if ratio_callback_data:
+                btn.text = texts.generation.get_text_btn_ratio(ratio)
+                btn.callback_data = keyboards.callback_datas.SelectRatioCallback(ratio=ratio).pack()
             new_row.append(btn)
         new_ikb.append(new_row)
-
     await call.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_ikb))
 
 
@@ -134,9 +250,13 @@ async def start_gen(
 
     is_private = None
     level = 0
+    ratio = AspectRatio.default()
+
     for row in call.message.reply_markup.inline_keyboard:
         for btn in row:
-            private_callback_data = keyboards.callback_datas.SelectIsPrivateCallback.from_callback_data(btn.callback_data)
+            private_callback_data = keyboards.callback_datas.SelectIsPrivateCallback.from_callback_data(
+                btn.callback_data
+            )
             if private_callback_data:
                 is_private = private_callback_data.is_private
                 continue
@@ -144,7 +264,11 @@ async def start_gen(
             model_callback_data = keyboards.callback_datas.SelectModelCallback.from_callback_data(btn.callback_data)
             if model_callback_data and model_callback_data.is_selected:
                 level = model_callback_data.level
+                continue
 
+            ratio_callback_data = keyboards.callback_datas.SelectRatioCallback.from_callback_data(btn.callback_data)
+            if ratio_callback_data:
+                ratio = AspectRatio(ratio_callback_data.ratio)
 
     if is_private is None:
         raise Exception('Не найден is_private')
@@ -157,6 +281,7 @@ async def start_gen(
         texts=texts,
         prompt_image_file_ids=file_ids,
         is_private=is_private,
+        ratio=ratio,
         session=call.bot.session._session,
-        level=level
+        model_level=level
     )

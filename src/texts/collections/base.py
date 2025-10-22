@@ -1,5 +1,7 @@
 import textwrap
 
+from enums import ModelStatusType
+from enums.generation import AspectRatio
 from schemas.avatars import AvatarWithModelsSchema
 from schemas.payment import GenerationsBuy
 from texts.json import TextsCollectionJson
@@ -35,16 +37,26 @@ class AvatarTexts(TextsCollectionJson):
         else:
             raise ValueError('level не может быть {}'.format(level))
         if mark_as_chosen:
-            text = 'V ' + text
+            text = '✅ ' + text
         return text
 
+    def get_model_status(self, status: ModelStatusType):
+        if status == 'paid':
+            return 'Оплачен (Загрузите фото)'
+        elif status == 'training':
+            return 'Обучается... ⏳'
+        else:
+            return 'Готов ✅'
+
     def avatar_page(self, avatar: AvatarWithModelsSchema) -> str:
-        available_levels = [model.level for model in avatar.models]
+        available_levels = {
+            model.level: model for model in avatar.models
+        }
         return self.AVATAR_PAGE.format(
             name=avatar.name,
             models='\n'.join([
-                self.get_model_level_name(level)
-                + (' ✅' if level in available_levels else ' ❌')
+                '- <b>' + self.get_model_level_name(level) + '</b>: '
+                + (self.get_model_status(available_levels.get(level).status) if level in available_levels else '❌')
                 for level in (0, 1)
             ])
         )
@@ -67,6 +79,10 @@ class GenerationTexts(TextsCollectionJson):
     ON_FAILED_GENERATION: str
 
     WAIT_MESSAGE: str
+
+    YOU_HAVE_ONLY_ONE_AVATAR: str
+    AVATAR_NOT_AVAILABLE_NOW: str
+    MODEL_NOT_AVAILABLE_NOW: str
 
     def selected_avatar_button(self, avatar_name: str):
         return self.SELECTED_AVATAR_BUTTON.format(avatar_name)
@@ -104,6 +120,22 @@ class GenerationTexts(TextsCollectionJson):
             prompt=textwrap.shorten(text=prompt, width=50, placeholder='...'),
             privacy=self.is_private_button(is_private)
         )
+
+    def get_text_btn_ratio(self, ratio: AspectRatio) -> str:
+        names = {
+            AspectRatio.square: 'Квадрат',
+            AspectRatio.high_1: 'Портрет',
+            AspectRatio.high_2: 'Вертик. - Instagram',
+            AspectRatio.high_3: 'Вертик. - Facebook',
+            AspectRatio.high_4: 'Вертик - Stories/Reels',
+            AspectRatio.wide_1: 'Горизонт. - Классика',
+            AspectRatio.wide_2: 'Горизонт. - Чуть шире',
+            AspectRatio.wide_3: 'Full HD',
+            AspectRatio.wide_4: 'Кинематограф'
+        }
+        name = names.get(ratio)
+        w, h = ratio.get_aspects()
+        return f'{w}:{h} ({name})'
 
 
 class PaymentTexts(TextsCollectionJson):

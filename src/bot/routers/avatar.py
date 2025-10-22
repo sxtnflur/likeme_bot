@@ -140,7 +140,9 @@ async def select_avatar(
     texts: Texts,
     db: AsyncSession
 ):
+    print(f'{callback_data.avatar_id=}')
     avatar = await AvatarsRepo(db).get_one(id=callback_data.avatar_id)
+    print(f'{avatar=}')
     await call.message.edit_text(
         texts.avatar.avatar_page(avatar),
         reply_markup=keyboards.avatar_page(

@@ -27,7 +27,10 @@ async def train_lora(dataset_url: str, metadata: dict | None = None) -> str:
     return request_id
 
 
-async def generate_images(prompt: str, lora: str, photo_format: tuple[int, int], num_images: Literal[1, 2] = 1):
+async def generate_images(
+        prompt: str, lora: str, photo_format: tuple[int, int],
+        num_images: Literal[1, 2] = 1
+) -> list[str]:
 
     arguments = {
         "prompt": prompt,
@@ -48,5 +51,5 @@ async def generate_images(prompt: str, lora: str, photo_format: tuple[int, int],
         print(event)
 
     result = await handler.get()
-    return result
+    return list(map(lambda image: image['url'], result["images"]))
 

@@ -1,14 +1,31 @@
 from typing import Optional
 
 from aiogram.filters.callback_data import CallbackData
+from enums.generation import AspectRatio
 
 
 class SelectedAvatarForGenCallback(CallbackData, prefix='selected-avatar-for-gen-image'):
     avatar_id: int
 
 
+class SelectAvatarForGenCallback(CallbackData, prefix='select-avatar-for-gen'):
+    avatar_id: int
+
+
 class StartImageGenCallback(CallbackData, prefix='start-gen-image'):
     ...
+
+
+class SelectRatioCallback(CallbackData, prefix='select-ratio-for-gen'):
+    ratio: str
+
+    @classmethod
+    def from_callback_data(cls, callback_data: str) -> Optional['SelectRatioCallback']:
+        prefix = 'select-ratio-for-gen'
+        if not callback_data.startswith(prefix):
+            return
+        ratio = callback_data.split(':')[1]
+        return SelectRatioCallback(ratio=ratio)
 
 
 class SelectIsPrivateCallback(CallbackData, prefix='pregen-select-private'):
@@ -35,3 +52,7 @@ class SelectModelCallback(CallbackData, prefix='pregen-select-model'):
         level = int(callback_data.split(':')[1])
         is_selected = bool(int(callback_data.split(':')[2]))
         return SelectModelCallback(level=level, is_selected=is_selected)
+
+
+class BackToCreatingImageCallback(CallbackData, prefix='back-to-creating-image'):
+    ...

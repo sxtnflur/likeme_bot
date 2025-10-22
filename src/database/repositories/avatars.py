@@ -15,6 +15,7 @@ class AvatarsRepo(BaseRepo[models.Avatar]):
             .options(
                 selectinload(self.model.models)
             )
+            .filter_by(**filters)
         )
         avatar = await self.db.scalar(stmt)
         return AvatarWithModelsSchema.model_validate(avatar)

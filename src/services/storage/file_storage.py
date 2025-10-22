@@ -11,9 +11,6 @@ class FileStorage(BaseStorage):
         self.path = path
         self.base_url = base_url
 
-        print(f'{self.path=}')
-        print(f'{self.base_url=}')
-
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
 

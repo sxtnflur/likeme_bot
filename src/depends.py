@@ -8,6 +8,7 @@ from services.ai.openai_service import OpenAIService
 from services.avatars_service import AvatarsService
 from services.payment import PaymentService
 from services.storage import BaseStorage, FileStorage
+from services.translation import TranslationService
 from services.users import UsersService
 
 if settings.PAYMENT_TEST:
@@ -37,14 +38,16 @@ openai_service = OpenAIService(
     default_max_tokens=2000
 )
 
+translation_service = TranslationService(openai=openai_service)
+
 categories_service = CategoriesService(openai=openai_service)
 
 image_generator_service = ImageGeneratorService(bot=bot, file_storage=files_storage,
-                                                categories_service=categories_service)
+                                                categories_service=categories_service,
+                                                translation_service=translation_service)
 
 
 avatars_service = AvatarsService(bot=bot, storage=files_storage)
-
 
 payments_service = PaymentService(bot=bot)
 

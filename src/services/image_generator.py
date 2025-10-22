@@ -2,7 +2,9 @@ import datetime
 import aiogram
 import aiohttp
 from aiogram.types import Message
+from enums.generation import AspectRatio
 from services.categories import CategoriesService
+from services.translation import TranslationService
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import UsersRepo, AvatarsRepo, GeneratedImagesRepo, GeneratedImagesCategoriesRepo
 from services.ai.fal import nanobanana
@@ -15,10 +17,12 @@ from services.ai.fal import flux
 
 class ImageGeneratorService:
     def __init__(self, bot: aiogram.Bot, file_storage: BaseStorage,
-                 categories_service: CategoriesService):
+                 categories_service: CategoriesService,
+                 translation_service: TranslationService):
         self.bot = bot
         self.storage = file_storage
         self.categories_service = categories_service
+        self.translation_service = translation_service
 
     async def generate_image(self,
                              message: Message,
@@ -28,6 +32,7 @@ class ImageGeneratorService:
                              texts: Texts,
                              prompt_image_file_ids: list[str],
                              is_private: bool,
+                             ratio: AspectRatio,
                              session: aiohttp.ClientSession,
                              model_level: int = 0
                              ) -> None:
@@ -66,18 +71,21 @@ class ImageGeneratorService:
                     ]
                     images += prompt_images
 
+                ratio = ratio.get_aspects()
                 coro = nanobanana.edit_image(
                     prompt,
                     images=images,
-                    num_images=1
+                    num_images=1,
+                    aspect_ratio=f'{ratio[0]}:{ratio[1]}'
                 )
             elif model_level == 1:
                 if not model.diffusers_url:
                     raise Exception('Нет diffusers_url')
+                prompt = await self.translation_service.translate_ru_to_en(prompt)
                 coro = flux.generate_images(
                     prompt,
                     lora=model.diffusers_url,
-                    photo_format=(0, 0)
+                    photo_format=ratio.get_wh()
                 )
             else:
                 await self.bot.send_message(
