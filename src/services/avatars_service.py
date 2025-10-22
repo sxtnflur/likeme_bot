@@ -66,7 +66,7 @@ class AvatarsService:
     ) -> None:
         await ModelsRepo(db).update(
             filters=dict(id=model_id),
-            updates=dict(diffusers_url=diffusers_url)
+            updates=dict(diffusers_url=diffusers_url, status='ready')
         )
         avatar_id = await ModelsRepo(db).get_one_field('avatar_id', id=model_id)
         user_id = await AvatarsRepo(db).get_one_field('user_id', id=avatar_id)

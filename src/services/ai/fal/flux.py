@@ -45,7 +45,8 @@ async def generate_images(
     if lora:
         arguments["loras"] = [{"path": lora, "scale": 1}]
 
-    handler = await fal_client.submit_async("fal-ai/flux-lora", arguments=arguments)
+    model = 'fal-ai/flux-lora'
+    handler = await fal_client.submit_async(model, arguments=arguments)
 
     async for event in handler.iter_events():
         print(event)

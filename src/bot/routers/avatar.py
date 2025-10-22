@@ -108,7 +108,12 @@ async def get_name_for_simple_avatar(
         db=db
     )
     await m.answer(
-        texts.avatar.on_create_avatar(avatar_name)
+        '🎉',
+        reply_markup=keyboards.main_menu(texts)
+    )
+    await m.answer(
+        texts.avatar.on_create_avatar(avatar_name),
+        reply_markup=keyboards.on_create_avatar(texts)
     )
 
 
@@ -125,6 +130,10 @@ async def input_my_name_for_avatar(
         file_id=file_id,
         name=avatar_name,
         db=db
+    )
+    await call.message.answer(
+        '🎉',
+        reply_markup=keyboards.main_menu(texts)
     )
     await call.message.answer(
         texts.avatar.on_create_avatar(avatar_name),
@@ -174,9 +183,17 @@ async def get_photos_to_model(
     db: AsyncSession,
     media_group: list[Message] = None
 ):
-    if len(media_group) < 10:
+    if not media_group or len(media_group) < 10:
+        if not media_group:
+            if m.photo:
+                count_photos = 1
+            else:
+                count_photos = 0
+        else:
+            count_photos = len(media_group)
         await m.answer(
             'Вы отправили только {} фото вместо 10. Пожалуйста, отправьте 10 фото'
+            .format(count_photos)
         )
         return
 
