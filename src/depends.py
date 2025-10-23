@@ -7,7 +7,9 @@ from services.image_generator import ImageGeneratorService
 from services.ai.openai_service import OpenAIService
 from services.avatars_service import AvatarsService
 from services.payment import PaymentService
+from services.s3 import S3Service
 from services.storage import BaseStorage, FileStorage
+from services.storage import s3
 from services.translation import TranslationService
 from services.users import UsersService
 
@@ -26,9 +28,22 @@ payment_factory = PaymentFactory(
     yookassa=yookassa_service
 )
 
-files_storage: BaseStorage = FileStorage(
-    path=settings.FILES_PATH, base_url=settings.FILES_BASE_URL
+s3_service = S3Service(
+    endpoint_url=settings.S3_ENDPOINT,
+    aws_access_key_id=settings.S3_ACCESS,
+    aws_secret_access_key=settings.S3_SECRET,
+    bucket=settings.S3_BUCKET,
+    region_name=settings.S3_REGION_NAME
 )
+
+files_storage: BaseStorage = s3.S3FileStorage(
+    s3_manager=s3.FilesManagerS3(s3=s3_service),
+    base_url=settings.S3_BASE_URL
+)
+
+# files_storage: BaseStorage = FileStorage(
+#     base_path=settings.FILES_PATH, base_url=settings.FILES_BASE_URL
+# )
 
 openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 

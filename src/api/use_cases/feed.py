@@ -1,7 +1,7 @@
 from api.schemas.feed import FeedPost
 from database import GeneratedImagesRepo
 from database.repositories.generated_images import FeedOrdering
-from services.categories import CategoriesEnum
+from enums.categories import CategoriesEnum
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

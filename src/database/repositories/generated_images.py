@@ -1,6 +1,5 @@
 from enum import StrEnum
-
-from services.categories import CategoriesEnum
+from enums.categories import CategoriesEnum
 from sqlalchemy import select, desc, func, case
 from sqlalchemy.orm import selectinload
 from .base import BaseRepo

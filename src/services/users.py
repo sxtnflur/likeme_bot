@@ -44,6 +44,7 @@ class UsersService:
                 folder=f'/avatars',
                 replace_by_file_path=True
             )
+            print(f'{avatar_url=}')
             await self.__add_user_to_db(
                 tg_id, username, first_name, last_name,
                 language=language,

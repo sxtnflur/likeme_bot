@@ -4,7 +4,7 @@ from api.types import Offset, Limit
 from database.repositories.generated_images import FeedOrdering
 from fastapi import APIRouter, Body, Query
 from typing_extensions import Annotated
-from services.categories import CategoriesEnum
+from enums.categories import CategoriesEnum
 
 router = APIRouter(prefix='/feed')
 

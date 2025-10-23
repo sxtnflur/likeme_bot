@@ -37,7 +37,7 @@ class PaymentService:
             amount=amount,
             type='package'
         )
-        await UsersRepo(db).increase_field(
+        updated_generations = await UsersRepo(db).increase_field(
             filters=dict(id=user_id),
             field='image_generations',
             value=package.generations
@@ -46,7 +46,7 @@ class PaymentService:
         texts = get_texts(language)
         await self.bot.send_message(
             chat_id=user_id,
-            text=texts.payment.ON_SUCCESS_PAYMENT
+            text=texts.payment.on_success_payment_package(updated_generations)
         )
 
     async def on_payment_model(self, user_id: int, amount: float, db: AsyncSession,

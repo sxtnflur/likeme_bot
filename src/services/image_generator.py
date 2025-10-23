@@ -2,6 +2,7 @@ import datetime
 import aiogram
 import aiohttp
 from aiogram.types import Message
+from bot import keyboards
 from enums.generation import AspectRatio
 from services.categories import CategoriesService
 from services.translation import TranslationService
@@ -46,7 +47,8 @@ class ImageGeneratorService:
             except:
                 await self.bot.send_message(
                     chat_id=user_id,
-                    text=texts.generation.NO_GENERATIONS_MORE
+                    text=texts.generation.NO_GENERATIONS_MORE,
+                    reply_markup=keyboards.start_buy(texts)
                 )
                 return
 

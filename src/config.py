@@ -32,6 +32,13 @@ class Settings(BaseSettings):
 
     FAL_KEY: str
 
+    S3_BASE_URL: str
+    S3_ENDPOINT: str
+    S3_ACCESS: str
+    S3_SECRET: str
+    S3_BUCKET: str
+    S3_REGION_NAME: str = 'ru-7'
+
 
 def get_env_path():
     possible_paths = [

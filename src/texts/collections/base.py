@@ -148,6 +148,7 @@ class PaymentTexts(TextsCollectionJson):
 
     PAY_BUTTON: str = 'Оплатить'
     ON_SUCCESS_PAYMENT: str
+    ON_SUCCESS_PAYMENT_PACKAGE: str
 
     BUY_LEVEL_1: str
 
@@ -164,6 +165,9 @@ class PaymentTexts(TextsCollectionJson):
 
     def buy_model_level_1(self, price: int) -> str:
         return self.BUY_LEVEL_1.format(price)
+
+    def on_success_payment_package(self, gens: int) -> str:
+        return self.ON_SUCCESS_PAYMENT_PACKAGE.format(gens)
 
 
 class MainMenuButtons(TextsCollectionJson):

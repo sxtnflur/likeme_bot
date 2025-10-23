@@ -43,6 +43,11 @@ async def generate_images(
     }
 
     if lora:
+        # PIXEL: {'path': 'https://huggingface.co/Shakker-Labs/FLUX.1-Kontext-dev-LoRA-Pixel-Style/resolve/main/FLUX
+        # -kontext-lora-pixel-style.safetensors', 'scale': 1.5}
+
+        # { "path": "https://huggingface.co/Shakker-Labs/FLUX.1-Kontext-dev-LoRA-Felt-Style"
+        # "/rezolve/main/FLUX-kontext-lora-felt-style.safetensors", "scale": 1 }
         arguments["loras"] = [{"path": lora, "scale": 1}]
 
     model = 'fal-ai/flux-lora'
