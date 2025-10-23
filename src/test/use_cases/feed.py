@@ -3,6 +3,7 @@ import unittest
 from api.depends import get_feed_use_case
 from database.engine import async_session
 from database.repositories.generated_images import FeedOrdering
+from enums.categories import CategoriesEnum
 from services.categories import CategoriesService
 
 
@@ -12,6 +13,14 @@ class TestFeedUseCase(unittest.TestCase):
             async with async_session() as session:
                 use_case = get_feed_use_case(session)
 
+                feed = await use_case.get_feed(
+                    ordering=FeedOrdering.top,
+                    categories=None,
+                    offset=0,
+                    limit=50
+                )
+                print(f'{feed=}')
+                return
                 categories = CategoriesService.category_keys
                 orderings = [FeedOrdering.all, FeedOrdering.new, FeedOrdering.top]
                 for category in (categories + [None]):

@@ -23,14 +23,14 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
             offset: int | None = None,
             limit: int | None = None
     ) -> list[GeneratedImage]:
-        '''
+        """
 
         :param strategy:
         :param filters:
         :param offset:
         :param limit:
         :return:
-        '''
+        """
         stmt = (
             select(self.model)
             .options(
@@ -66,7 +66,7 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
                 stmt
                 .outerjoin(likes_subquery, self.model.id == likes_subquery.c.image_id)
                 .order_by(
-                    desc(likes_subquery.c.likes_count),
+                    desc(func.coalesce(likes_subquery.c.likes_count, 0)),
                     desc(self.model.created_at)
                 )
             )
