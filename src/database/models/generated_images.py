@@ -13,6 +13,7 @@ class GeneratedImage(Base):
     prompt_images: Mapped[list[str] | None] = mapped_column(ARRAY(String))
     is_private: Mapped[bool] = mapped_column(server_default='False')
     model_id: Mapped[int] = mapped_column(ForeignKey('models.id'))
+    ratio: Mapped[str | None]
     created_at: Mapped[CreatedAt]
 
     user = relationship('User', foreign_keys=[user_id])

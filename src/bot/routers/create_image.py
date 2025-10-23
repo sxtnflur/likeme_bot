@@ -43,13 +43,21 @@ async def get_prompt(
     get_file_id = lambda x: x.photo[-1].file_id
 
     if m.media_group_id:
+        if media_group[0].caption:
+            prompt = media_group[0].caption
+        else:
+            prompt = await state.get_value('create_image_prompt')
         file_ids = list(map(get_file_id, media_group))
-        await state.update_data(create_image_file_ids=file_ids)
-        prompt = await state.get_value('create_image_prompt')
+        await state.update_data(create_image_file_ids=file_ids,
+                                create_image_prompt=prompt)
     elif m.photo:
+        if m.caption:
+            prompt = m.caption
+        else:
+            prompt = await state.get_value('create_image_prompt')
         file_ids = [get_file_id(m)]
-        await state.update_data(create_image_file_ids=file_ids)
-        prompt = await state.get_value('create_image_prompt')
+        await state.update_data(create_image_file_ids=file_ids,
+                                create_image_prompt=prompt)
     elif m.text:
         prompt = m.text.strip()
         await state.update_data(create_image_prompt=prompt)
@@ -247,6 +255,7 @@ async def start_gen(
     await state.clear()
     prompt = data.get('create_image_prompt')
     file_ids = data.get('create_image_file_ids', [])
+    prompt_image_urls = data.get('create_image_prompt_image_urls', None)
 
     is_private = None
     level = 0
@@ -280,6 +289,7 @@ async def start_gen(
         db=db,
         texts=texts,
         prompt_image_file_ids=file_ids,
+        prompt_image_urls=prompt_image_urls,
         is_private=is_private,
         ratio=ratio,
         session=call.bot.session._session,

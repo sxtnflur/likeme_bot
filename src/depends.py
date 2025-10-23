@@ -7,6 +7,7 @@ from services.image_generator import ImageGeneratorService
 from services.ai.openai_service import OpenAIService
 from services.avatars_service import AvatarsService
 from services.payment import PaymentService
+from services.remixing import RemixingService
 from services.s3 import S3Service
 from services.storage import BaseStorage, FileStorage
 from services.storage import s3
@@ -52,6 +53,7 @@ openai_service = OpenAIService(
     default_model='gpt-4.1-mini',
     default_max_tokens=2000
 )
+remixing_service = RemixingService(bot=bot)
 
 translation_service = TranslationService(openai=openai_service)
 
@@ -59,7 +61,8 @@ categories_service = CategoriesService(openai=openai_service)
 
 image_generator_service = ImageGeneratorService(bot=bot, file_storage=files_storage,
                                                 categories_service=categories_service,
-                                                translation_service=translation_service)
+                                                translation_service=translation_service,
+                                                remixing_service=remixing_service)
 
 
 avatars_service = AvatarsService(bot=bot, storage=files_storage)

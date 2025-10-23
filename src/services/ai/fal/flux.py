@@ -59,3 +59,35 @@ async def generate_images(
     result = await handler.get()
     return list(map(lambda image: image['url'], result["images"]))
 
+
+async def image2image(
+    prompt: str,
+    image_url: str,
+    lora: str,
+    photo_format: tuple[int, int],
+    strength: float = 0.85,
+    num_images: Literal[1, 2] = 1,
+):
+    arguments = {
+        "prompt": prompt,
+        "image_url": image_url,
+        "image_size": {
+            "width": photo_format[0],
+            "height": photo_format[1]
+        },
+        "strength": strength,
+        "num_images": num_images,
+        'enable_safety_checker': False
+    }
+
+    if lora:
+        arguments["loras"] = [{"path": lora, "scale": 1}]
+
+    model = 'fal-ai/flux-lora/image-to-image'
+    handler = await fal_client.submit_async(model, arguments=arguments)
+
+    async for event in handler.iter_events():
+        print(event)
+
+    result = await handler.get()
+    return list(map(lambda image: image['url'], result["images"]))

@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CopyTextButton
 from bot.keyboards.callback_datas.create_image import SelectedAvatarForGenCallback, StartImageGenCallback, \
     SelectIsPrivateCallback, SelectModelCallback, SelectAvatarForGenCallback, BackToCreatingImageCallback, \
     SelectRatioCallback
@@ -75,3 +75,11 @@ def select_avatar_for_gen(avatars: list[AvatarSchema], texts: Texts):
         text=texts.base.BACK_BUTTON, callback_data=BackToCreatingImageCallback().pack()
     )])
     return InlineKeyboardMarkup(inline_keyboard=ikb)
+
+
+def on_generated_image(remix_url: str, texts: Texts):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text='Ссылка на ремикс', copy_text=CopyTextButton(text=remix_url)
+        )]
+    ])

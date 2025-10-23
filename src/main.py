@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from aiogram.types import Update
 from api.app import create_app
+from bot.exceptions import register_errors
 from bot.middlewares import MenuButtonsMiddleware
 from bot.middlewares.texts import TextsMiddleware
 from config import settings
@@ -16,6 +17,7 @@ dp.message.middleware(TextsMiddleware())
 dp.callback_query.middleware(TextsMiddleware())
 
 dp.message.middleware(MenuButtonsMiddleware())
+register_errors(dp)
 
 
 @asynccontextmanager
