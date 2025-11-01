@@ -19,7 +19,7 @@ class FeedUseCase:
     ) -> list[FeedPost]:
         def prepare_post(post: GeneratedImage) -> FeedPost:
             return FeedPost.model_validate(
-                post.__dict | {'remix_it_url': self.remixing_service.create_start_link(post.id)}
+                post.__dict__ | {'remix_it_url': self.remixing_service.create_start_link(post.id)}
             )
 
         posts = await GeneratedImagesRepo(self.db).get_feed(
