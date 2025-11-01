@@ -1,22 +1,31 @@
+from typing import cast
+
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, BufferedInputFile
-from aiogram.utils.deep_linking import create_start_link, decode_payload
+from aiogram.utils.deep_linking import create_start_link, decode_payload, create_deep_link
 from bot import keyboards
 from database import GeneratedImagesRepo, AvatarsRepo, ModelsRepo
 from enums.generation import AspectRatio
 from schemas.avatars import AvatarSchema, AvatarWithModelsSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts import Texts
+from config import settings
 
 
 class RemixingService:
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
-    async def create_start_link(self, generated_image_id: int) -> str:
+    def create_start_link(self, generated_image_id: int) -> str:
         payload = f'remix-{generated_image_id}'
-        return await create_start_link(bot=self.bot, payload=payload, encode=True)
+        return create_deep_link(
+            username=cast(str, settings.BOT_USERNAME),
+            link_type="start",
+            payload=payload,
+            encode=True,
+            encoder=None
+    )
 
     async def process_start_link(
         self,

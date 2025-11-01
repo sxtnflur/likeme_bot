@@ -14,6 +14,7 @@ class FeedPost(BaseModel):
     image_url: str
     prompt: str
     user: FeedUser
+    remix_it_url: str
 
     class Config:
         from_attributes = True

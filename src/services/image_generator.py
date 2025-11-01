@@ -182,7 +182,7 @@ class ImageGeneratorService:
             text='<b>Поделись ссылкой на ремикс с друзьями</b>\n\n'
                  'По ней они смогут сгенерировать фото с теми же параметрами',
             reply_markup=keyboards.on_generated_image(
-                remix_url=await self.remixing_service.create_start_link(image_id),
+                remix_url=self.remixing_service.create_start_link(image_id),
                 texts=texts
             )
         )
