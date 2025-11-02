@@ -36,18 +36,20 @@ class S3Service:
             return self
 
         self.__session = aioboto3.Session()
-        self.__client = self.__session.client(
-            endpoint_url=self.__endpoint_url,
-            aws_access_key_id=self.__aws_access_key_id,
-            aws_secret_access_key=self.__aws_secret_access_key,
-            region_name=self.__region_name,
-            service_name=self.__service_name
-        )
+        if self.__client is None:
+            self.__client = self.__session.client(
+                endpoint_url=self.__endpoint_url,
+                aws_access_key_id=self.__aws_access_key_id,
+                aws_secret_access_key=self.__aws_secret_access_key,
+                region_name=self.__region_name,
+                service_name=self.__service_name
+            )
         self.__client: S3Client = await self.__client.__aenter__()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        await self.__client.__aexit__(exc_type, exc_val, exc_tb)
+        if self.__client is not None:
+            await self.__client.__aexit__(exc_type, exc_val, exc_tb)
         self.__session = None
         self.__client = None
 
