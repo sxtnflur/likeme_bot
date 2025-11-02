@@ -24,17 +24,12 @@ async def start(
         db: AsyncSession
 ):
     await state.clear()
-    language = await UsersRepo(db).get_one_field('language', id=m.from_user.id)
-    if not language:
-        if m.from_user.language_code in settings.ENABLE_LANGUAGES:
-            language = m.from_user.language_code
-        else:
-            language = settings.DEFAULT_LANGUAGE
 
     # user_exists = await UsersRepo(db).exists(id=m.from_user.id)
     user_has_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id)
 
-    await users_service.add_user_from_aiogram(user=m.from_user, language=language, db=db)
+    await users_service.add_user_from_aiogram(user=m.from_user, language=m.from_user.language_code, db=db)
+    language = await UsersRepo(db).get_one_field('language', id=m.from_user.id)
     texts = get_texts(language)
 
     print(f'{command.args=}')

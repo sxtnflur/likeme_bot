@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from .base import BaseRepo
 from .. import models
 

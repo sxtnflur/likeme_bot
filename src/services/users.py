@@ -18,28 +18,29 @@ class UsersService:
         avatar_url: str | None,
         db: AsyncSession
     ):
+        if language not in settings.ENABLE_LANGUAGES:
+            language = settings.DEFAULT_LANGUAGE
+
         await UsersRepo(db).add_or_update(
             values=dict(id=tg_id, username=username,
                         first_name=first_name, last_name=last_name,
                         language=language,
                         avatar_url=avatar_url),
             on_conflict=['id'],
-            not_update=['id']
+            not_update=['id', 'language']
         )
 
-    async def __add_user_with_avatar(
+    async def add_user_with_avatar(
         self,
-        profile_photos: list[list[PhotoSize]],
+        avatar: bytes,
         tg_id: int, username: str | None,
         first_name: str, last_name: str | None,
         language: str,
-        db: AsyncSession
+        db: AsyncSession,
     ):
-        avatar_file_id = profile_photos[0][-1].file_id
-        avatar_file = await self.bot.download(avatar_file_id)
         async with self.storage.start_transaction() as cdn:
             avatar_url = await cdn.save_file_get_url(
-                file=avatar_file.read(),
+                file=avatar,
                 filename=f'{tg_id}.jpg',
                 folder=f'/avatars',
                 replace_by_file_path=True
@@ -61,11 +62,14 @@ class UsersService:
             user_id=tg_id, limit=1
         )
         if profile_photos.total_count:
-            await self.__add_user_with_avatar(
-                profile_photos.photos,
+            avatar_file_id = profile_photos[0][-1].file_id
+            avatar_file = await self.bot.download(avatar_file_id)
+            await self.add_user_with_avatar(
+                avatar_file.read(),
                 tg_id, username,
                 first_name, last_name,
-                language, db
+                language=language,
+                db=db
             )
         else:
             await self.__add_user_to_db(

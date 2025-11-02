@@ -16,17 +16,26 @@ class FeedOrdering(StrEnum):
 class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
     model = GeneratedImage
 
-    async def get_one(self, **filters) -> GeneratedImage | None:
-        return await self.db.scalar(
-            select(self.model)
+    async def get_one(self, user_id: int, **filters) -> GeneratedImage | None:
+        res = await self.db.execute(
+            select(self.model,
+                   select(Like).filter(
+                       Like.image_id == self.model.id,
+                       Like.user_id == user_id
+                   ).exists()
+            )
             .options(
                 selectinload(self.model.user)
             )
             .filter_by(**filters)
         )
+        res = res.fetchone()
+        return res
 
     async def get_feed(
-            self, filters: dict,
+            self,
+            user_id: int,
+            filters: dict,
             ordering: FeedOrdering = FeedOrdering.all,
             categories: list[CategoriesEnum] | None = None,
             offset: int | None = None,
@@ -41,7 +50,12 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
         :return:
         """
         stmt = (
-            select(self.model)
+            select(self.model,
+                   select(Like).filter(
+                       Like.image_id == self.model.id,
+                       Like.user_id == user_id
+                   ).exists()
+                   )
             .options(
                 selectinload(self.model.user)
             )
@@ -112,7 +126,8 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
                 )
             )
 
-        return await self.db.scalars(stmt)
+        res = await self.db.execute(stmt)
+        return res.fetchall()
 
     async def count_likes(self, id: int) -> int:
         stmt = (

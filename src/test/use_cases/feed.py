@@ -1,6 +1,6 @@
 import asyncio
 import unittest
-from api.depends import get_feed_use_case
+from api.depends import get_feed_use_case, get_remixing_service
 from database.engine import async_session
 from database.repositories.generated_images import FeedOrdering
 from enums.categories import CategoriesEnum
@@ -11,9 +11,10 @@ class TestFeedUseCase(unittest.TestCase):
     def test_get_feed(self):
         async def do():
             async with async_session() as session:
-                use_case = get_feed_use_case(session)
+                use_case = get_feed_use_case(session, remixing_service=get_remixing_service())
 
                 feed = await use_case.get_feed(
+                    user_id=1304563494,
                     ordering=FeedOrdering.top,
                     categories=None,
                     offset=0,

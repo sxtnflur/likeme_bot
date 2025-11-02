@@ -1,10 +1,10 @@
 from api.schemas.feed import FeedPost
 from database import GeneratedImagesRepo, GeneratedImage
 from database.repositories.generated_images import FeedOrdering
+from database.repositories.likes import LikesRepo
 from enums.categories import CategoriesEnum
 from sqlalchemy.ext.asyncio import AsyncSession
 from services.remixing import RemixingService
-
 
 
 class FeedUseCase:
@@ -13,17 +13,22 @@ class FeedUseCase:
         self.db = db
         self.remixing_service = remixing_service
 
-    def prepare_post(self, post: GeneratedImage) -> FeedPost:
+    def prepare_post(self, post: tuple[GeneratedImage, bool]) -> FeedPost:
+        post, is_liked = post
         return FeedPost.model_validate(
-            post.__dict__ | {'remix_it_url': self.remixing_service.create_start_link(post.id)}
+            post.__dict__ | {'remix_it_url': self.remixing_service.create_start_link(post.id),
+                             'is_liked': is_liked}
         )
 
     async def get_feed(
-        self, ordering: FeedOrdering = FeedOrdering.all,
+        self,
+        user_id: int,
+        ordering: FeedOrdering = FeedOrdering.all,
         categories: list[CategoriesEnum] | None = None,
         offset: int = 0, limit: int = 50
     ) -> list[FeedPost]:
         posts = await GeneratedImagesRepo(self.db).get_feed(
+            user_id=user_id,
             filters=dict(is_private=False),
             ordering=ordering,
             categories=categories,
@@ -32,8 +37,22 @@ class FeedUseCase:
         )
         return list(map(self.prepare_post, posts))
 
-    async def get_post(self, post_id: int) -> FeedPost:
+    async def get_post(self, user_id: int, post_id: int) -> FeedPost:
         post = await GeneratedImagesRepo(self.db).get_one(
+            user_id=user_id,
             id=post_id
         )
         return self.prepare_post(post)
+
+    async def like_post(self, post_id: int, user_id: int) -> bool:
+        """
+        :param post_id:
+        :param user_id:
+        :return: True - пост лайкнут, False - лайк убран
+        """
+        if await LikesRepo(self.db).exists(image_id=post_id, user_id=user_id):
+            await LikesRepo(self.db).delete(image_id=post_id, user_id=user_id)
+            return False
+        else:
+            await LikesRepo(self.db).add(image_id=post_id, user_id=user_id)
+            return True
