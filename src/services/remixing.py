@@ -30,7 +30,7 @@ class RemixingService:
     async def process_start_link(
         self,
         payload: str,
-        message: Message,
+        user_id: int,
         texts: Texts,
         state: FSMContext,
         db: AsyncSession
@@ -38,7 +38,6 @@ class RemixingService:
         """
         :param db:
         :param state:
-        :param message:
         :param texts:
         :param payload: command.args
         :return: True - ссылка обработана, False = нет
@@ -51,7 +50,7 @@ class RemixingService:
                 return False
 
             await self.remix_gen_image(
-                message=message,
+                user_id=user_id,
                 texts=texts,
                 generated_image_id=image_id,
                 state=state,
@@ -61,7 +60,7 @@ class RemixingService:
         return False
 
     async def remix_gen_image(self,
-                              message: Message,
+                              user_id: int,
                               texts: Texts,
                               generated_image_id: int,
                               state: FSMContext, db: AsyncSession):
@@ -74,7 +73,7 @@ class RemixingService:
 
         chosen_avatar: AvatarWithModelsSchema = await state.get_value('create_image_chosen_avatar')
         if not chosen_avatar:
-            chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=message.from_user.id)
+            chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=user_id)
             chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
             await state.update_data(create_image_chosen_avatar=chosen_avatar)
 
@@ -87,8 +86,9 @@ class RemixingService:
 
         print(f'{image.image_url=}')
 
-        image_file = await message.bot.session._session.get(image.image_url)
-        await message.answer_photo(
+        image_file = await self.bot.session._session.get(image.image_url)
+        await self.bot.send_photo(
+            chat_id=user_id,
             photo=BufferedInputFile(await image_file.read(), filename='result.jpg'),
             caption=texts.generation.pre_create_image(
                 prompt=image.prompt,

@@ -16,6 +16,15 @@ class FeedOrdering(StrEnum):
 class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
     model = GeneratedImage
 
+    async def get_one(self, **filters) -> GeneratedImage | None:
+        return await self.db.scalar(
+            select(self.model)
+            .options(
+                selectinload(self.model.user)
+            )
+            .filter_by(**filters)
+        )
+
     async def get_feed(
             self, filters: dict,
             ordering: FeedOrdering = FeedOrdering.all,

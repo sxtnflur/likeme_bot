@@ -22,3 +22,11 @@ async def get_feed(
         categories=[category] if category else None,
         offset=offset, limit=limit
     )
+
+
+@router.get('/{post_id}')
+async def get_post(
+    feed_use_case: FeedUseCase,
+    post_id: int
+) -> FeedPost:
+    return await feed_use_case.get_post(post_id)

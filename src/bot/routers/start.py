@@ -41,7 +41,7 @@ async def start(
     if command.args:
         if await remixing_service.process_start_link(
             payload=command.args,
-            message=m,
+            user_id=m.from_user.id,
             texts=texts,
             state=state,
             db=db
