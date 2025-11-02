@@ -25,7 +25,7 @@ likes_subquery = (
 class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
     model = GeneratedImage
 
-    async def get_one(self, user_id: int, **filters) -> GeneratedImage | None:
+    async def get_one_with_data(self, user_id: int, **filters) -> GeneratedImage | None:
         res = await self.db.execute(
             select(self.model,
                    select(Like).filter(

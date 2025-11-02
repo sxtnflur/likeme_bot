@@ -45,7 +45,7 @@ class FeedUseCase:
         )
 
     async def get_post(self, user_id: int, post_id: int) -> FeedPost | None:
-        post = await GeneratedImagesRepo(self.db).get_one(
+        post = await GeneratedImagesRepo(self.db).get_one_with_data(
             user_id=user_id,
             id=post_id
         )

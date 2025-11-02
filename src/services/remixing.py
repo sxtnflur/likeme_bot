@@ -64,7 +64,7 @@ class RemixingService:
                               texts: Texts,
                               generated_image_id: int,
                               state: FSMContext, db: AsyncSession):
-        image = await GeneratedImagesRepo(db).get_one(user_id=user_id, id=generated_image_id)
+        image = await GeneratedImagesRepo(db).get_one(id=generated_image_id)
 
         await state.update_data(
             create_image_prompt=image.prompt,
