@@ -1,7 +1,7 @@
 from enum import StrEnum
 from enums.categories import CategoriesEnum
 from sqlalchemy import select, desc, func, case
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 from .base import BaseRepo
 from ..models.categories import GeneratedImageCategory
 from ..models.generated_images import GeneratedImage, Like
@@ -35,7 +35,7 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
                    func.coalesce(likes_subquery.c.likes_count, 0).label('count_likes')
             )
             .options(
-                selectinload(self.model.user)
+                joinedload(self.model.user)
             )
             .filter_by(**filters)
             .outerjoin(likes_subquery, self.model.id == likes_subquery.c.image_id)
@@ -52,14 +52,6 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
             offset: int | None = None,
             limit: int | None = None
     ) -> list[GeneratedImage]:
-        """
-
-        :param strategy:
-        :param filters:
-        :param offset:
-        :param limit:
-        :return:
-        """
         stmt = (
             select(self.model,
                    select(Like).filter(
@@ -69,7 +61,7 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
                    func.coalesce(likes_subquery.c.likes_count, 0).label('count_likes')
                    )
             .options(
-                selectinload(self.model.user)
+                joinedload(self.model.user)
             )
             .filter_by(**filters)
             .outerjoin(likes_subquery, self.model.id == likes_subquery.c.image_id)
@@ -114,7 +106,6 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
 
             stmt = (
                 stmt
-                .outerjoin(likes_subquery, self.model.id == likes_subquery.c.image_id)
                 .order_by(
                     desc(score),
                     desc(self.model.created_at)

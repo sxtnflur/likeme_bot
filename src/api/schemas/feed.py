@@ -29,3 +29,8 @@ class FeedPost(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class Feed(BaseModel):
+    posts: list[FeedPost]
+    has_more: bool = True

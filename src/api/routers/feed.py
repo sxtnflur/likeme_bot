@@ -1,5 +1,5 @@
 from api.depends import FeedUseCase, AuthedUser
-from api.schemas.feed import FeedPost
+from api.schemas.feed import FeedPost, Feed
 from api.types import Offset, Limit
 from database.repositories.generated_images import FeedOrdering
 from fastapi import APIRouter, Body, Query
@@ -17,7 +17,7 @@ async def get_feed(
     category: Annotated[CategoriesEnum | None, Query(...)] = None,
     offset: Offset = None,
     limit: Limit = 50
-) -> list[FeedPost]:
+) -> Feed:
     return await feed_use_case.get_feed(
         user_id=user.id,
         ordering=ordering,

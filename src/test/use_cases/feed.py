@@ -17,13 +17,13 @@ class TestFeedUseCase(unittest.TestCase):
 
                 feed = await use_case.get_feed(
                     user_id=1304563494,
-                    ordering=FeedOrdering.top,
+                    ordering=FeedOrdering.all,
                     categories=None,
                     offset=0,
                     limit=50
                 )
                 print(f'{feed=}')
-                for post in feed:
+                for post in feed.posts:
                     post_ = await use_case.get_post(user_id=user_id, post_id=post.id)
                     assert post == post_
 
