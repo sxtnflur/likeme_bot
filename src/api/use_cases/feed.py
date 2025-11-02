@@ -3,6 +3,7 @@ from database import GeneratedImagesRepo, GeneratedImage
 from database.repositories.generated_images import FeedOrdering
 from database.repositories.likes import LikesRepo
 from enums.categories import CategoriesEnum
+from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from services.remixing import RemixingService
 
@@ -13,11 +14,13 @@ class FeedUseCase:
         self.db = db
         self.remixing_service = remixing_service
 
-    def prepare_post(self, post: tuple[GeneratedImage, bool]) -> FeedPost:
-        post, is_liked = post
+    def prepare_post(self, post: Row) -> FeedPost:
+        post = post._mapping
+        image = post.GeneratedImage
         return FeedPost.model_validate(
-            post.__dict__ | {'remix_it_url': self.remixing_service.create_start_link(post.id),
-                             'is_liked': is_liked}
+            image.__dict__ | {
+                **post, 'remix_it_url': self.remixing_service.create_start_link(image.id),
+            }
         )
 
     async def get_feed(

@@ -9,6 +9,8 @@ from services.categories import CategoriesService
 
 class TestFeedUseCase(unittest.TestCase):
     def test_get_feed(self):
+        user_id = 1304563494
+
         async def do():
             async with async_session() as session:
                 use_case = get_feed_use_case(session, remixing_service=get_remixing_service())
@@ -21,6 +23,10 @@ class TestFeedUseCase(unittest.TestCase):
                     limit=50
                 )
                 print(f'{feed=}')
+                for post in feed:
+                    post_ = await use_case.get_post(user_id=user_id, post_id=post.id)
+                    assert post == post_
+
                 return
                 categories = CategoriesService.category_keys
                 orderings = [FeedOrdering.all, FeedOrdering.new, FeedOrdering.top]

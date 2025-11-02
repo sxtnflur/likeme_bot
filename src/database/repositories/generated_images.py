@@ -12,6 +12,15 @@ class FeedOrdering(StrEnum):
     top = "top"
     all = "all"
 
+likes_subquery = (
+            select(
+                Like.image_id,
+                func.count(Like.user_id).label('likes_count')
+            )
+            .group_by(Like.image_id)
+            .subquery()
+        )
+
 
 class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
     model = GeneratedImage
@@ -22,12 +31,14 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
                    select(Like).filter(
                        Like.image_id == self.model.id,
                        Like.user_id == user_id
-                   ).exists()
+                   ).exists().label('is_liked'),
+                   func.coalesce(likes_subquery.c.likes_count, 0).label('count_likes')
             )
             .options(
                 selectinload(self.model.user)
             )
             .filter_by(**filters)
+            .outerjoin(likes_subquery, self.model.id == likes_subquery.c.image_id)
         )
         res = res.fetchone()
         return res
@@ -54,13 +65,16 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
                    select(Like).filter(
                        Like.image_id == self.model.id,
                        Like.user_id == user_id
-                   ).exists()
+                   ).exists().label('is_liked'),
+                   func.coalesce(likes_subquery.c.likes_count, 0).label('count_likes')
                    )
             .options(
                 selectinload(self.model.user)
             )
             .filter_by(**filters)
+            .outerjoin(likes_subquery, self.model.id == likes_subquery.c.image_id)
         )
+
         if offset:
             stmt = stmt.offset(offset)
         if limit:
@@ -76,18 +90,8 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
             stmt = stmt.order_by(desc(self.model.created_at))
 
         elif ordering == FeedOrdering.top:
-            likes_subquery = (
-                select(
-                    Like.image_id,
-                    func.count(Like.user_id).label('likes_count')
-                )
-                .group_by(Like.image_id)
-                .subquery()
-            )
-
             stmt = (
                 stmt
-                .outerjoin(likes_subquery, self.model.id == likes_subquery.c.image_id)
                 .order_by(
                     desc(func.coalesce(likes_subquery.c.likes_count, 0)),
                     desc(self.model.created_at)
@@ -95,15 +99,6 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
             )
 
         elif ordering == FeedOrdering.all:
-            likes_subquery = (
-                select(
-                    Like.image_id,
-                    func.count(Like.user_id).label('likes_count')
-                )
-                .group_by(Like.image_id)
-                .subquery()
-            )
-
             # Комбинируем популярность и новизну через CASE для полного контроля
             time_diff_days = func.extract('epoch', func.now() - self.model.created_at) / (24 * 3600)
 
