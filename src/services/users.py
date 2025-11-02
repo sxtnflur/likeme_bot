@@ -62,7 +62,7 @@ class UsersService:
             user_id=tg_id, limit=1
         )
         if profile_photos.total_count:
-            avatar_file_id = profile_photos[0][-1].file_id
+            avatar_file_id = profile_photos.photos[0][-1].file_id
             avatar_file = await self.bot.download(avatar_file_id)
             await self.add_user_with_avatar(
                 avatar_file.read(),
