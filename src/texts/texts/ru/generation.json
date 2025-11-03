@@ -13,5 +13,7 @@
   "YOU_HAVE_ONLY_ONE_AVATAR": "У вас есть только один аватар",
   "AVATAR_NOT_AVAILABLE_NOW": "Этот аватар сейчас недоступен. Обратитесь в поддержку",
   "MODEL_NOT_AVAILABLE_NOW": "Эта модель сейчас недоступна",
-  "FEED_BUTTON": "Смотреть ленту"
+  "FEED_BUTTON": "Смотреть ленту",
+  "SWITCH_IS_PRIVATE_BUTTON_PRIVATE": "Сделать генерацию приватной \uD83D\uDD12",
+  "SWITCH_IS_PRIVATE_BUTTON_PUBLIC": "Сделать генерацию публичной \uD83D\uDC41"
 }

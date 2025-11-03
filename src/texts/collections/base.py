@@ -94,6 +94,10 @@ class GenerationTexts(TextsCollectionJson):
 
     FEED_BUTTON: str
 
+    SWITCH_IS_PRIVATE_BUTTON_PRIVATE: str
+    SWITCH_IS_PRIVATE_BUTTON_PUBLIC: str
+
+
     def selected_avatar_button(self, avatar_name: str):
         return self.SELECTED_AVATAR_BUTTON.format(avatar_name)
 
@@ -136,7 +140,7 @@ class GenerationTexts(TextsCollectionJson):
             return (
                 'Ты генерировал в <b>приватном режиме</b> 🔒, поэтому твое фото никто не увидит, если ты сам этого не '
                 'захочешь\n\n'
-                'Но ты все равно можешь отправить эту <a href="{}">ссылку</b> на свою генерацию своим '
+                'Но ты все равно можешь отправить эту <a href="{}">ссылку</a> на свою генерацию своим '
                 'друзьям:\n<code>{}</code>\n\n '
                 'По ней они смогут поставить <b>лайк</b>, <b>поделиться</b> и <b>повторить твой промпт</b> на себе\n\n'
                 'Если ты хочешь только дать возможность другу посмотреть фото и повторить твой промпт, '
@@ -146,7 +150,7 @@ class GenerationTexts(TextsCollectionJson):
             return (
                 'Делись своей <a href="{}">генерацией</a> с друзьями: <code>{}</code>\n\n'
                 'И может поискать свой пост в <a href="{}">ленте</a>'
-            ).format(webapp_post_url, webapp_post_url, settings.WEBAPP_URL)
+            ).format(webapp_post_url, webapp_post_url, settings.WEBAPP_DIRECT_URL)
 
     def get_text_btn_ratio(self, ratio: AspectRatio) -> str:
         names = {
@@ -163,6 +167,12 @@ class GenerationTexts(TextsCollectionJson):
         name = names.get(ratio)
         w, h = ratio.get_aspects()
         return f'{w}:{h} ({name})'
+
+    def switch_is_private_button(self, is_private) -> str:
+        if is_private:
+            return self.SWITCH_IS_PRIVATE_BUTTON_PUBLIC
+        else:
+            return self.SWITCH_IS_PRIVATE_BUTTON_PRIVATE
 
 
 class PaymentTexts(TextsCollectionJson):

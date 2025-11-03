@@ -183,6 +183,27 @@ class ImageGeneratorService:
             text=texts.generation.after_image_generated(
                 is_private=is_private,
                 webapp_post_url=settings.WEBAPP_DIRECT_URL + f'?startapp=post_{image_id}',
-                remix_url=self.remixing_service.create_start_link(image_id)
-            )
+                remix_url=self.remixing_service.create_start_link(image_id),
+            ),
+            reply_markup=keyboards.on_generated_image(image_id, is_private, texts),
+            disable_web_page_preview=True
         )
+
+    async def switch_is_private_for_generated_image(self, image_id: int, db: AsyncSession) -> bool:
+        is_private = await GeneratedImagesRepo(db).get_one_field(
+            'is_private', id=image_id
+        )
+        if is_private is None:
+            raise Exception('Генерация не найдена')
+        elif is_private:
+            await GeneratedImagesRepo(db).update(
+                updates=dict(is_private=False),
+                filters=dict(id=image_id)
+            )
+            return False
+        else:
+            await GeneratedImagesRepo(db).update(
+                updates=dict(is_private=True),
+                filters=dict(id=image_id)
+            )
+            return True

@@ -54,5 +54,6 @@ class SelectModelCallback(CallbackData, prefix='pregen-select-model'):
         return SelectModelCallback(level=level, is_selected=is_selected)
 
 
-class BackToCreatingImageCallback(CallbackData, prefix='back-to-creating-image'):
-    ...
+class BackToCreatingImageCallback(CallbackData, prefix='back-to-creating-image'): ...
+class SwitchIsPrivateCreatedImageCallback(CallbackData, prefix='switch-privacy-created-image'):
+    image_id: int

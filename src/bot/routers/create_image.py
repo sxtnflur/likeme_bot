@@ -3,8 +3,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
 from bot import keyboards
 from bot.middlewares.media_group import MediaMiddleware
+from config import settings
 from database import db_connect, UsersRepo, AvatarsRepo
-from depends import image_generator_service
+from depends import image_generator_service, remixing_service
 from enums.generation import AspectRatio
 from schemas.avatars import AvatarSchema
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -300,4 +301,29 @@ async def start_gen(
         ratio=ratio,
         session=call.bot.session._session,
         model_level=level
+    )
+
+
+@router.callback_query(keyboards.callback_datas.SwitchIsPrivateCreatedImageCallback.filter())
+@db_connect()
+async def switch_is_private_for_created_image(
+    call: CallbackQuery,
+    callback_data: keyboards.callback_datas.SwitchIsPrivateCreatedImageCallback,
+    db: AsyncSession, texts: Texts
+):
+    is_private = await image_generator_service.switch_is_private_for_generated_image(
+        callback_data.image_id, db=db
+    )
+    await call.message.edit_text(
+        text=texts.generation.after_image_generated(
+            is_private=is_private,
+            webapp_post_url=settings.WEBAPP_DIRECT_URL + f'?startapp=post_{callback_data.image_id}',
+            remix_url=remixing_service.create_start_link(callback_data.image_id)
+        ),
+        reply_markup=keyboards.on_generated_image(
+            image_id=callback_data.image_id,
+            is_private=is_private,
+            texts=texts
+        ),
+        disable_web_page_preview=True
     )
