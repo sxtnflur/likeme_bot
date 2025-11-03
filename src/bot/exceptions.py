@@ -6,8 +6,12 @@ from aiogram.types import InlineKeyboardMarkup, Message, ErrorEvent
 class SendToUserException(Exception):
     text: str
 
-    def __init__(self, text: str, reply_markup: InlineKeyboardMarkup | None = None,
-                 add_support: bool = False):
+    def __init__(self,
+                 text: str, reply_markup: InlineKeyboardMarkup | None = None,
+                 add_support: bool = False,
+                 base_exc: Exception | None = None
+                 ):
+        self.base_exc = base_exc
         self.text = text
         self.reply_markup = reply_markup
 
@@ -15,7 +19,10 @@ class SendToUserException(Exception):
             self.text += '\n\nПоддержка: @teledeff_support'
 
     def __str__(self):
-        return self.text
+        text = self.text
+        if self.base_exc:
+            text += f' (Ориг. ошибка: {self.base_exc})'
+        return text
 
     def __repr__(self):
         return self.__str__()

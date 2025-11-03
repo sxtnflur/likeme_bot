@@ -49,10 +49,11 @@ class ImageGeneratorService:
                 field='image_generations',
                 value=1
             )
-        except:
+        except Exception as e:
             raise SendToUserException(
-                texts.generation.NO_GENERATIONS_MORE,
-                reply_markup=keyboards.start_buy(texts)
+                text=texts.generation.NO_GENERATIONS_MORE,
+                reply_markup=keyboards.start_buy(texts),
+                base_exc=e
             )
 
         avatar = await AvatarsRepo(db).get_by_user_current(user_id)
@@ -144,10 +145,13 @@ class ImageGeneratorService:
                         prompt=prompt, is_private=is_private
                     )
                 )
+            except SendToUserException as e:
+                raise e
             except Exception as e:
                 print(f'{e=}')
                 raise SendToUserException(
-                    text=texts.generation.ON_FAILED_GENERATION
+                    text=texts.generation.ON_FAILED_GENERATION,
+                    base_exc=e
                 )
 
             file = await session.get(res_image_url_)
