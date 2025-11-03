@@ -1,6 +1,7 @@
 {
   "BACK_BUTTON": "↩ Назад",
-  "START_MESSAGE": "\uD83D\uDC4B Привет!",
+  "START_MESSAGE": "\uD83D\uDC4B Может сгенерируем фоточку?",
   "UNPREDICTABLE_ERROR": "Произошла непредвиденная ошибка",
-  "FIRST_MESSAGE": "\uD83D\uDC4B Привет! Отправь свое фото"
+  "FEED_MESSAGE": "Смотри и примерий на себе генерации других людей в <b><a href='{}'>Ленте</a></b>",
+  "FIRST_MESSAGE": "\uD83D\uDC4B Отправьте свое фото"
 }

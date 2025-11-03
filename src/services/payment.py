@@ -9,16 +9,16 @@ from texts import get_texts
 class PaymentService:
     image_packages = [
         ImageGenerationsBuy(
-            id=1, generations=1, price=50
+            id=1, generations=50, price=790
         ),
         ImageGenerationsBuy(
-            id=2, generations=5, price=200
+            id=2, generations=100, price=1390
         ),
         ImageGenerationsBuy(
-            id=3, generations=15, price=500
+            id=3, generations=300, price=2790
         )
     ]
-    model_level_1_price = 1500
+    model_level_1_price: int = 1390
 
     def __init__(self, bot: aiogram.Bot):
         self.bot = bot

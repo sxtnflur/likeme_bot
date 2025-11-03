@@ -19,7 +19,10 @@ router.message.middleware(MediaMiddleware(latency=5))
 async def create_image(
     m: Message, state: FSMContext, texts: Texts
 ):
-    await m.answer(texts.generation.START_CREATE_IMAGE)
+    await m.answer(
+        texts.generation.START_CREATE_IMAGE,
+        reply_markup=keyboards.start_create_image(texts)
+    )
     await state.set_state(CreateImageStates.send_prompt)
 
 
@@ -27,7 +30,10 @@ async def create_image(
 async def create_image_call(
     call: CallbackQuery, state: FSMContext, texts: Texts
 ):
-    await call.message.edit_text(texts.generation.START_CREATE_IMAGE)
+    await call.message.edit_text(
+        texts.generation.START_CREATE_IMAGE,
+        reply_markup=keyboards.start_create_image(texts)
+    )
     await state.set_state(CreateImageStates.send_prompt)
 
 

@@ -2,7 +2,7 @@
   "BUY_START": "У вас осталось {} генераций\n\nЧтобы купить генерации, нажмите \"Купить генерации\"",
   "BUY_IMAGE_GENERATIONS_BUTTON": "Купить генерации",
   "BUY_IMAGE_GENERATIONS": "Купить генерации",
-  "BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON": "{} за {} руб",
+  "BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON": "{} за {}₽",
   "SELECT_PACKAGE": "Для оплаты нажмите \"Оплатить\"",
   "PAY_BUTTON": "Оплатить",
   "ON_SUCCESS_PAYMENT": "Оплата прошла успешно!",

@@ -2,7 +2,7 @@ import os.path
 from pathlib import Path
 
 from config import settings
-from .base import BaseTexts, AvatarTexts, PaymentTexts, GenerationTexts, MainMenuButtons
+from .base import BaseTexts, AvatarTexts, PaymentTexts, GenerationTexts, MainMenuButtons, ChainMessagesTexts
 
 
 class Texts:
@@ -35,3 +35,7 @@ class Texts:
         if not os.path.exists(path):
             Exception('Нет файла main_menu_buttons.json')
         return MainMenuButtons(path)
+
+    @property
+    def chain_messages(self):
+        return ChainMessagesTexts(self.__get_path('chain_messages.json'))

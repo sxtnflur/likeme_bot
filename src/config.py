@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     S3_BUCKET: str
     S3_REGION_NAME: str = 'ru-7'
 
+    WEBAPP_URL: str
+    WEBAPP_DIRECT_URL: str
+
 
 def get_env_path():
     possible_paths = [

@@ -4,6 +4,7 @@ import aiohttp
 from aiogram.types import Message
 from bot import keyboards
 from bot.exceptions import SendToUserException
+from config import settings
 from enums.generation import AspectRatio
 from services.categories import CategoriesService
 from services.remixing import RemixingService
@@ -179,10 +180,9 @@ class ImageGeneratorService:
 
         await self.bot.send_message(
             chat_id=user_id,
-            text='<b>Поделись ссылкой на ремикс с друзьями</b>\n\n'
-                 'По ней они смогут сгенерировать фото с теми же параметрами',
-            reply_markup=keyboards.on_generated_image(
-                remix_url=self.remixing_service.create_start_link(image_id),
-                texts=texts
+            text=texts.generation.after_image_generated(
+                is_private=is_private,
+                webapp_post_url=settings.WEBAPP_DIRECT_URL + f'?startapp=post_{image_id}',
+                remix_url=self.remixing_service.create_start_link(image_id)
             )
         )

@@ -25,9 +25,10 @@ class UsersService:
             values=dict(id=tg_id, username=username,
                         first_name=first_name, last_name=last_name,
                         language=language,
-                        avatar_url=avatar_url),
+                        avatar_url=avatar_url,
+                        image_generations=3),
             on_conflict=['id'],
-            not_update=['id', 'language']
+            not_update=['id', 'language', 'image_generations']
         )
 
     async def add_user_with_avatar(

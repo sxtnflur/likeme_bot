@@ -1,1 +1,1 @@
-from .base import Texts, get_texts
+from .base import Texts, get_texts, get_main_menu_button

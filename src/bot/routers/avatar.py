@@ -125,12 +125,14 @@ async def input_my_name_for_avatar(
 ):
     file_id = await state.get_value('nano_avatar_id')
     avatar_name = call.from_user.full_name
+    wait_msg = await call.message.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR)
     await avatars_service.add_simple_avatar(
         user_id=call.from_user.id,
         file_id=file_id,
         name=avatar_name,
         db=db
     )
+    await wait_msg.delete()
     await call.message.answer(
         '🎉',
         reply_markup=keyboards.main_menu(texts)
@@ -216,6 +218,4 @@ async def get_photos_to_model(
         db=db
     )
 
-    await m.answer(
-        '<i>Обучение модели началось. Обычно оно занимает 15-30 минут. Пожалуйста подождите...</i>'
-    )
+    await m.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR_PRO)

@@ -1,11 +1,21 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CopyTextButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CopyTextButton, WebAppInfo
 from bot.keyboards.callback_datas.create_image import SelectedAvatarForGenCallback, StartImageGenCallback, \
     SelectIsPrivateCallback, SelectModelCallback, SelectAvatarForGenCallback, BackToCreatingImageCallback, \
     SelectRatioCallback
+from config import settings
 from enums.generation import AspectRatio
 from schemas.avatars import AvatarSchema, AvatarWithModelsSchema
 from texts import Texts
 from .base import create_list_kb
+
+
+def start_create_image(texts: Texts):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=texts.generation.FEED_BUTTON,
+            web_app=WebAppInfo(url=settings.WEBAPP_URL)
+        )]
+    ])
 
 
 def to_create_image(texts: Texts):

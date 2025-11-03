@@ -1,5 +1,6 @@
 import textwrap
 
+from config import settings
 from enums import ModelStatusType
 from enums.generation import AspectRatio
 from schemas.avatars import AvatarWithModelsSchema
@@ -13,9 +14,15 @@ class BaseTexts(TextsCollectionJson):
     START_MESSAGE: str
     FIRST_MESSAGE: str
     UNPREDICTABLE_ERROR: str
+    FEED_MESSAGE: str
+
+    def feed_message(self, feed_url):
+        return self.FEED_MESSAGE.format(feed_url)
 
 
 class AvatarTexts(TextsCollectionJson):
+    WAIT_MSG_CREATE_AVATAR: str
+    WAIT_MSG_CREATE_AVATAR_PRO: str
     ON_SEND_AVATAR_PHOTO: str
     ON_CREATE_AVATAR: str
     INPUT_MY_NAME_FOR_MODEL: str
@@ -84,6 +91,8 @@ class GenerationTexts(TextsCollectionJson):
     AVATAR_NOT_AVAILABLE_NOW: str
     MODEL_NOT_AVAILABLE_NOW: str
 
+    FEED_BUTTON: str
+
     def selected_avatar_button(self, avatar_name: str):
         return self.SELECTED_AVATAR_BUTTON.format(avatar_name)
 
@@ -121,6 +130,23 @@ class GenerationTexts(TextsCollectionJson):
             privacy=self.is_private_button(is_private)
         )
 
+    def after_image_generated(self, is_private: bool, webapp_post_url: str, remix_url: str):
+        if is_private:
+            return (
+                'Ты генерировал в <b>приватном режиме</b> 🔒, поэтому твое фото никто не увидит, если ты сам этого не '
+                'захочешь\n\n'
+                'Но ты все равно можешь отправить эту <a href="{}">ссылку</b> на свою генерацию своим '
+                'друзьям:\n<code>{}</code>\n\n '
+                'По ней они смогут поставить <b>лайк</b>, <b>поделиться</b> и <b>повторить твой промпт</b> на себе\n\n'
+                'Если ты хочешь только дать возможность другу посмотреть фото и повторить твой промпт, '
+                'тебе нужна вот эта <a href="{}">ссылка</a>: <code>{}</code>'
+            ).format(webapp_post_url, webapp_post_url, remix_url, remix_url)
+        else:
+            return (
+                'Делись своей <a href="{}">генерацией</a> с друзьями: <code>{}</code>\n\n'
+                'И может поискать свой пост в <a href="{}">ленте</a>'
+            ).format(webapp_post_url, webapp_post_url, settings.WEBAPP_URL)
+
     def get_text_btn_ratio(self, ratio: AspectRatio) -> str:
         names = {
             AspectRatio.square: 'Квадрат',
@@ -142,11 +168,11 @@ class PaymentTexts(TextsCollectionJson):
     BUY_START: str
     BUY_IMAGE_GENERATIONS_BUTTON: str
     BUY_IMAGE_GENERATIONS: str
-    BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON: str = '{} за {} руб'
+    BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON: str
 
     SELECT_PACKAGE: str
 
-    PAY_BUTTON: str = 'Оплатить'
+    PAY_BUTTON: str
     ON_SUCCESS_PAYMENT: str
     ON_SUCCESS_PAYMENT_PACKAGE: str
 
@@ -170,7 +196,19 @@ class PaymentTexts(TextsCollectionJson):
         return self.ON_SUCCESS_PAYMENT_PACKAGE.format(gens)
 
 
+class ChainMessagesTexts(TextsCollectionJson):
+    MESSAGE_1: str
+    MESSAGE_2: str
+    MESSAGE_3: str
+    MESSAGE_4: str
+    NEXT_BUTTON_1: str
+    NEXT_BUTTON_2: str
+    NEXT_BUTTON_3: str
+    CREATE_AVATAR_BUTTON: str
+
+
 class MainMenuButtons(TextsCollectionJson):
     AVATAR: str
     CREATE_IMAGE: str
     PAYMENT: str
+    FEED: str
