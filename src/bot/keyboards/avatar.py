@@ -27,9 +27,10 @@ def on_create_avatar(texts: Texts):
 
 
 def avatars_list(
-    avatars: list[AvatarSchema], page: int = 0, limit: int = 10
+    avatars: list[AvatarSchema], page: int = 0, limit: int = 10,
+    can_create_avatar: bool | None = None
 ) -> InlineKeyboardMarkup:
-    return create_scrolling_kb(
+    rm = create_scrolling_kb(
         page=page,
         objs=avatars,
         callback_data=AvatarsListCallback,
@@ -39,6 +40,21 @@ def avatars_list(
         ),
         limit=limit
     )
+    if can_create_avatar is None:
+        pass
+    elif can_create_avatar:
+        rm.inline_keyboard.append([
+            InlineKeyboardButton(
+                text='Создать аватар', callback_data='create_new_avatar'
+            )
+        ])
+    else:
+        rm.inline_keyboard.append([
+            InlineKeyboardButton(
+                text='Купить аватар', callback_data='buy_new_avatar'
+            )
+        ])
+    return rm
 
 
 def avatar_page(
@@ -72,3 +88,11 @@ def avatar_page(
         )
     ])
     return InlineKeyboardMarkup(inline_keyboard=ikb)
+
+
+def pro_avatar_start_know():
+    return InlineKeyboardMarkup(inline_keyboard=[
+         [InlineKeyboardButton(
+            text='Купить', callback_data='buy_pro_avatar'
+        )]
+    ])

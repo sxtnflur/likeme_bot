@@ -314,6 +314,7 @@ async def switch_is_private_for_created_image(
     is_private = await image_generator_service.switch_is_private_for_generated_image(
         callback_data.image_id, db=db
     )
+    can_create_avatar = await UsersRepo(db).get_one_field('can_create_avatar', id=call.from_user.id)
     await call.message.edit_text(
         text=texts.generation.after_image_generated(
             is_private=is_private,
@@ -323,6 +324,7 @@ async def switch_is_private_for_created_image(
         reply_markup=keyboards.on_generated_image(
             image_id=callback_data.image_id,
             is_private=is_private,
+            can_create_avatar=can_create_avatar,
             texts=texts
         ),
         disable_web_page_preview=True

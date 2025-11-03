@@ -16,25 +16,28 @@ class SendMessage(BaseModel):
         arbitrary_types_allowed = True
 
     async def send(self, chat_id: int, state: FSMContext, texts: Texts | None = None):
+        text = None
         if texts:
             if self.text:
-                self.text = getattr(texts.chain_messages, self.text)
+                text = getattr(texts.chain_messages, self.text)
             if self.reply_markup:
                 for row in self.reply_markup.inline_keyboard:
                     for btn in row:
                         btn.text = getattr(texts.chain_messages, btn.text)
+        else:
+            text = self.text
 
         if self.photo:
             await bot.send_photo(
                 chat_id=chat_id,
                 photo=self.photo,
-                caption=self.text,
+                caption=text,
                 reply_markup=self.reply_markup
             )
         elif self.text:
             await bot.send_message(
                 chat_id=chat_id,
-                text=self.text,
+                text=text,
                 reply_markup=self.reply_markup
             )
         if self.state:

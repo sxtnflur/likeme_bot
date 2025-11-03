@@ -1,7 +1,8 @@
 import aiogram
 from bot import keyboards
-from database import PaymentsRepo, UsersRepo, ModelsRepo
+from database import PaymentsRepo, UsersRepo, ModelsRepo, AvatarsRepo
 from schemas.payment import ImageGenerationsBuy
+from services.avatars_service import AvatarsService
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts import get_texts
 
@@ -18,6 +19,7 @@ class PaymentService:
             id=3, generations=300, price=2790
         )
     ]
+    model_level_0_price: int = 290
     model_level_1_price: int = 1390
 
     def __init__(self, bot: aiogram.Bot):
@@ -58,8 +60,8 @@ class PaymentService:
         )
         model_id = await ModelsRepo(db).add_and_get(
             dict(avatar_id=avatar_id,
-            level=level,
-            status='paid'),
+                 level=level,
+                 status='paid'),
             'id'
         )
         language = await UsersRepo(db).get_one_field('language', id=user_id)
@@ -72,4 +74,15 @@ class PaymentService:
                 texts=texts,
                 level=level
             )
+        )
+
+    async def on_payment_avatar(self, user_id: int, amount: float, model_level: int, db: AsyncSession) -> None:
+        await PaymentsRepo(db).add(
+            user_id=user_id,
+            amount=amount,
+            type='avatar'
+        )
+        await UsersRepo(db).update(
+            filters=dict(id=user_id),
+            updates=dict(can_create_avatar=True)
         )

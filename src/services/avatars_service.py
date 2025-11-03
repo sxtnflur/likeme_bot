@@ -34,7 +34,8 @@ class AvatarsService:
             )
             await UsersRepo(db).update(
                 filters=dict(id=user_id),
-                updates=dict(current_avatar_id=avatar_id)
+                updates=dict(current_avatar_id=avatar_id,
+                             can_create_avatar=True)
             )
 
     async def create_modeling_model(

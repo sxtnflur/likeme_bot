@@ -92,7 +92,7 @@ async def buy_model(
         session=call.bot.session._session,
         metadata={
             'type': 'model',
-            'model_level': 1,
+            'model_level': callback_data.level,
             'avatar_id': callback_data.avatar_id,
             'user_id': call.from_user.id
         }
@@ -101,3 +101,5 @@ async def buy_model(
         texts.payment.buy_model_level_1(price=payments_service.model_level_1_price),
         reply_markup=keyboards.buy_model_level_1(pay_url=pay_data.url, texts=texts)
     )
+
+

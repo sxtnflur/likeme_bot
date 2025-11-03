@@ -182,6 +182,7 @@ class ImageGeneratorService:
                                       image_id=image_id), categories))
         )
 
+        can_create_avatar = await UsersRepo(db).get_one_field('can_create_avatar', id=user_id)
         await self.bot.send_message(
             chat_id=user_id,
             text=texts.generation.after_image_generated(
@@ -189,7 +190,7 @@ class ImageGeneratorService:
                 webapp_post_url=settings.WEBAPP_DIRECT_URL + f'?startapp=post_{image_id}',
                 remix_url=self.remixing_service.create_start_link(image_id),
             ),
-            reply_markup=keyboards.on_generated_image(image_id, is_private, texts),
+            reply_markup=keyboards.on_generated_image(image_id, is_private, texts, can_create_avatar=can_create_avatar),
             disable_web_page_preview=True
         )
 

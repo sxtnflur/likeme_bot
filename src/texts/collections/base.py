@@ -25,6 +25,7 @@ class AvatarTexts(TextsCollectionJson):
     WAIT_MSG_CREATE_AVATAR: str
     WAIT_MSG_CREATE_AVATAR_PRO: str
     ON_SEND_AVATAR_PHOTO: str
+    ON_SEND_AVATAR_PHOTO_IF_CAN_TAKE_ACCOUNT_NAME: str
     ON_CREATE_AVATAR: str
     INPUT_MY_NAME_FOR_MODEL: str
 
@@ -33,6 +34,15 @@ class AvatarTexts(TextsCollectionJson):
     AVATARS_LIST: str
     AVATAR_PAGE: str
     BUY_LEVEL_1_BUTTON: str
+
+    SELECT_AVATAR_TO_BUY_PRO: str
+    NO_AVATARS: str
+
+    def on_send_avatar_photo(self, can_take_account_name: bool):
+        if can_take_account_name:
+            return self.ON_SEND_AVATAR_PHOTO_IF_CAN_TAKE_ACCOUNT_NAME
+        else:
+            return self.ON_SEND_AVATAR_PHOTO
 
     def on_create_avatar(self, avatar_name: str):
         return self.ON_CREATE_AVATAR.format(avatar_name)
@@ -138,7 +148,7 @@ class GenerationTexts(TextsCollectionJson):
     def after_image_generated(self, is_private: bool, webapp_post_url: str, remix_url: str):
         if is_private:
             return (
-                'Твоя генерация в <b>приватном режиме</b> 🔒, её никто не увидит, если ты сам этого не '
+                'Твоя генерация в <b>приватном режиме</b> 🔒, ее никто не увидит, если ты сам этого не '
                 'захочешь\n\n'
                 'Но ты все равно можешь отправить эту <a href="{}">ссылку</a> на свою генерацию '
                 'друзьям:\n<code>{}</code>\n\n'
