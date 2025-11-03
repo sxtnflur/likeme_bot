@@ -190,6 +190,7 @@ class PaymentTexts(TextsCollectionJson):
     BUY_IMAGE_GENERATIONS_BUTTON: str
     BUY_IMAGE_GENERATIONS: str
     BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON: str
+    BUY_AVATAR: str
 
     SELECT_PACKAGE: str
 
@@ -209,6 +210,9 @@ class PaymentTexts(TextsCollectionJson):
 
     def select_package(self, obj: GenerationsBuy):
         return self.SELECT_PACKAGE
+
+    def buy_avatar(self, price: int) -> str:
+        return self.BUY_AVATAR.format(price)
 
     def buy_model_level_1(self, price: int) -> str:
         return self.BUY_LEVEL_1.format(price)

@@ -29,7 +29,6 @@ class PaymentUseCase:
                 await self.payment_service.on_payment_avatar(
                     user_id=int(metadata['user_id']),
                     amount=amount,
-                    model_level=int(metadata['model_level']),
                     db=self.db
                 )
 

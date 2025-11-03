@@ -67,6 +67,15 @@ def on_success_payment_model(model_id: int, texts: Texts, level: int = 1):
     ])
 
 
+def on_success_payment_avatar(texts: Texts):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text='Создать аватар',
+            callback_data='create_new_avatar'
+        )]
+    ])
+
+
 def buy_avatar(
     pay_url_simple: str,
     pay_url_portrait: str,

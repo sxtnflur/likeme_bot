@@ -76,7 +76,7 @@ class PaymentService:
             )
         )
 
-    async def on_payment_avatar(self, user_id: int, amount: float, model_level: int, db: AsyncSession) -> None:
+    async def on_payment_avatar(self, user_id: int, amount: float, db: AsyncSession) -> None:
         await PaymentsRepo(db).add(
             user_id=user_id,
             amount=amount,
@@ -85,4 +85,11 @@ class PaymentService:
         await UsersRepo(db).update(
             filters=dict(id=user_id),
             updates=dict(can_create_avatar=True)
+        )
+        language = await UsersRepo(db).get_one_field('language', id=user_id)
+        texts = get_texts(language)
+        await self.bot.send_message(
+            chat_id=user_id,
+            text=texts.payment.ON_SUCCESS_PAYMENT,
+            reply_markup=keyboards.on_success_payment_avatar(texts)
         )

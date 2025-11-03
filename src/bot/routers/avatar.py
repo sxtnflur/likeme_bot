@@ -123,10 +123,8 @@ async def get_name_for_simple_avatar(
     can_create_avatar = await UsersRepo(db).get_one_field('can_create_avatar', id=m.from_user.id)
     if not can_create_avatar:
         await m.answer(
-            '<i>Выберите модель аватара и оплатите</i>',
-            reply_markup=await get_buy_new_avatar_kb(
-                user_id=m.from_user.id, texts=texts
-            )
+            texts.payment.buy_avatar(payments_service.model_level_0_price),
+            reply_markup=await get_buy_new_avatar_kb(user_id=m.from_user.id, texts=texts)
         )
         return
 
@@ -262,32 +260,19 @@ async def get_buy_new_avatar_kb(
     user_id: int, texts: Texts
 ):
     price_simple = payments_service.model_level_0_price
-    price_pro = payments_service.model_level_1_price
     pay_data_simple = await payment_factory.create_payment(
         amount=price_simple,
         description='Покупка Simple аватара',
         payment_method='yookassa',
         metadata=dict(
             user_id=user_id,
-            model_level=1
+            model_level=1,
+            type='avatar'
         )
     )
-    pay_data_pro = await payment_factory.create_payment(
-        amount=price_pro,
-        description='Покупка Portrait аватара',
-        payment_method='yookassa',
-        metadata=dict(
-            user_id=user_id,
-            model_level=1
-        )
+    return keyboards.pay_url_kb(
+        pay_url=pay_data_simple.url, texts=texts
     )
-    return keyboards.buy_avatar(
-            pay_url_simple=pay_data_simple.url,
-            pay_url_portrait=pay_data_pro.url,
-            price_simple=price_simple,
-            price_portrait=price_pro,
-            texts=texts
-        )
 
 
 @router.callback_query(F.data == 'buy_new_avatar')
@@ -295,6 +280,6 @@ async def buy_new_avatar(
     call: CallbackQuery, texts: Texts
 ):
     await call.message.answer(
-        '<i>Выберите модель аватара и оплатите</i>',
+        texts.payment.buy_avatar(payments_service.model_level_0_price),
         reply_markup=await get_buy_new_avatar_kb(user_id=call.from_user.id, texts=texts)
     )

@@ -37,6 +37,8 @@ async def callback(event: ErrorEvent):
             text=exc.text,
             reply_markup=exc.reply_markup
         )
+        if exc.base_exc is not None:
+            raise exc.base_exc
     elif isinstance(exc, TelegramAPIError):
         await event.update.bot.send_message(
             chat_id,
