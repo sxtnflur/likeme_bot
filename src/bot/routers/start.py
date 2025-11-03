@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import CommandStart, CommandObject
+from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from bot import keyboards
@@ -57,3 +57,8 @@ async def start(
 @router.message(F.text.in_(get_main_menu_button('FEED')))
 async def feed(m: Message, texts: Texts):
     await m.answer(texts.base.feed_message(feed_url=settings.WEBAPP_DIRECT_URL))
+
+
+@router.message(Command('support'))
+async def support(m: Message, texts: Texts):
+    await m.answer(texts.base.SUPPORT_MESSAGE)

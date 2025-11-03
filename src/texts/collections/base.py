@@ -15,6 +15,7 @@ class BaseTexts(TextsCollectionJson):
     FIRST_MESSAGE: str
     UNPREDICTABLE_ERROR: str
     FEED_MESSAGE: str
+    SUPPORT_MESSAGE: str
 
     def feed_message(self, feed_url):
         return self.FEED_MESSAGE.format(feed_url)
