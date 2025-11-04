@@ -71,11 +71,13 @@ class RemixingService:
             create_image_prompt_image_urls=image.prompt_images
         )
 
-        chosen_avatar: AvatarWithModelsSchema = await state.get_value('create_image_chosen_avatar')
+        chosen_avatar = await state.get_value('create_image_chosen_avatar')
         if not chosen_avatar:
             chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=user_id)
-            chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
-            await state.update_data(create_image_chosen_avatar=chosen_avatar)
+            chosen_avatar = AvatarWithModelsSchema.model_validate(chosen_avatar)
+            await state.update_data(create_image_chosen_avatar=chosen_avatar.model_dump())
+        else:
+            chosen_avatar = AvatarWithModelsSchema.model_validate(chosen_avatar)
 
         available_levels = [model.level for model in chosen_avatar.models]
         model_level = await ModelsRepo(db).get_one_field('level', id=image.model_id)
@@ -89,8 +91,11 @@ class RemixingService:
         image_file = await self.bot.session._session.get(image.image_url)
         await self.bot.send_photo(
             chat_id=user_id,
-            photo=BufferedInputFile(await image_file.read(), filename='result.jpg'),
-            caption=texts.generation.pre_create_image(
+            photo=BufferedInputFile(await image_file.read(), filename='result.jpg')
+        )
+        await self.bot.send_message(
+            chat_id=user_id,
+            text=texts.generation.pre_create_image(
                 prompt=image.prompt,
                 has_images=bool(image.prompt_images),
                 chosen_avatar_name=chosen_avatar.name

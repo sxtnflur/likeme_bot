@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     WEBAPP_URL: str
     WEBAPP_DIRECT_URL: str
 
+    REDIS_URL: str
+
 
 def get_env_path():
     possible_paths = [

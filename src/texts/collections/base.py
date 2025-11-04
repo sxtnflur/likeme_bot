@@ -38,6 +38,9 @@ class AvatarTexts(TextsCollectionJson):
     SELECT_AVATAR_TO_BUY_PRO: str
     NO_AVATARS: str
 
+    BUY_AVATAR_BUTTON: str
+    CREATE_AVATAR_BUTTON: str
+
     def on_send_avatar_photo(self, can_take_account_name: bool):
         if can_take_account_name:
             return self.ON_SEND_AVATAR_PHOTO_IF_CAN_TAKE_ACCOUNT_NAME
@@ -237,3 +240,4 @@ class MainMenuButtons(TextsCollectionJson):
     CREATE_IMAGE: str
     PAYMENT: str
     FEED: str
+    SUPPORT: str

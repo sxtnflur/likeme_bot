@@ -1,6 +1,7 @@
 {
   "AVATAR": "\uD83D\uDC64 Мои аватары",
-  "CREATE_IMAGE": "\uD83C\uDF04 Создать фото",
+  "CREATE_IMAGE": "\uD83D\uDE80 Создать фото",
   "FEED": "\uD83C\uDF87 Лента",
-  "PAYMENT": "\uD83D\uDC8E Мои генерации"
+  "PAYMENT": "\uD83D\uDC8E Мои генерации",
+  "SUPPORT": "\uD83D\uDCAC Поддержка"
 }

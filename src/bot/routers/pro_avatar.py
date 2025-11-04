@@ -55,6 +55,7 @@ async def pro_avatar_2(
         await call.message.answer(
             texts.avatar.SELECT_AVATAR_TO_BUY_PRO,
             reply_markup=keyboards.avatars_list(
+                texts=texts,
                 avatars=avatars,
                 page=0,
                 limit=50,

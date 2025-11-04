@@ -62,3 +62,9 @@ async def feed(m: Message, texts: Texts):
 @router.message(Command('support'))
 async def support(m: Message, texts: Texts):
     await m.answer(texts.base.SUPPORT_MESSAGE)
+
+
+@router.message(F.text.in_(get_main_menu_button('SUPPORT')))
+async def support(m: Message, texts: Texts):
+    await m.answer(texts.base.SUPPORT_MESSAGE)
+

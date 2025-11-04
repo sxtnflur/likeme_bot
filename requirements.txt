@@ -11,3 +11,4 @@ python-dotenv
 Pillow
 sqlalchemy
 asyncpg
+redis

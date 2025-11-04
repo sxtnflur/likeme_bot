@@ -41,6 +41,7 @@ async def start_avatars(
     await m.answer(
         texts.avatar.AVATARS_LIST,
         reply_markup=keyboards.avatars_list(
+            texts=texts,
             avatars=avatars,
             page=0,
             limit=50,
@@ -65,6 +66,7 @@ async def avatars_list(
     await call.message.edit_text(
         texts.avatar.AVATARS_LIST,
         reply_markup=keyboards.avatars_list(
+            texts=texts,
             avatars=list(map(AvatarSchema.model_validate, avatars)),
             page=callback_data.page,
             limit=callback_data.limit,

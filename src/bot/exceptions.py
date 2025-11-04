@@ -47,7 +47,7 @@ async def callback(event: ErrorEvent):
     else:
         await event.update.bot.send_message(
             chat_id,
-            text='Произошла непредвиденная ошибка. Мы уже работает над этим'
+            text='Произошла непредвиденная ошибка. Мы уже работаем над этим'
         )
     raise exc
 

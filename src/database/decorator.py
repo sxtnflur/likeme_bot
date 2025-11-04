@@ -9,6 +9,9 @@ def db_connect(kwarg_name: str = 'db', commit: bool = True, rollback: bool = Tru
     def bar(func: Callable):
         @wraps(func)
         async def wrapped(*args, **kwargs):
+            if kwarg_name in kwargs:
+                return await func(*args, **kwargs)
+
             async with async_session() as sess:
                 sess: AsyncSession
                 try:

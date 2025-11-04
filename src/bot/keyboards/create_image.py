@@ -35,10 +35,12 @@ def pre_generate_image(
     selected_model_level: int | None = None,
     selected_ratio: AspectRatio = AspectRatio.default()
 ):
-    if selected_model_level is None:
-        levels = list(map(lambda x: x.level, chosen_avatar.models))
-        if not levels:
-            raise Exception(f'У аватара {chosen_avatar.id} нет моделей (models={chosen_avatar.models})')
+    models = list(filter(lambda x: x.status == 'ready', chosen_avatar.models))
+    levels = list(map(lambda x: x.level, models))
+    if not levels:
+        raise Exception(f'У аватара {chosen_avatar.id} нет моделей (models={models})')
+
+    if selected_model_level is None or selected_model_level not in levels:
         selected_model_level = max(levels)
 
     ikb = [
@@ -59,7 +61,7 @@ def pre_generate_image(
                     is_selected=model.level == selected_model_level
                 ).pack()
             )
-            for model in chosen_avatar.models
+            for model in models
         ],
         [InlineKeyboardButton(
             text=texts.generation.get_text_btn_ratio(selected_ratio),

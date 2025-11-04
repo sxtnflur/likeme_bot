@@ -27,6 +27,7 @@ def on_create_avatar(texts: Texts):
 
 
 def avatars_list(
+    texts: Texts,
     avatars: list[AvatarSchema], page: int = 0, limit: int = 10,
     can_create_avatar: bool | None = None
 ) -> InlineKeyboardMarkup:
@@ -45,13 +46,13 @@ def avatars_list(
     elif can_create_avatar:
         rm.inline_keyboard.append([
             InlineKeyboardButton(
-                text='Создать аватар', callback_data='create_new_avatar'
+                text=texts.avatar.CREATE_AVATAR_BUTTON, callback_data='create_new_avatar'
             )
         ])
     else:
         rm.inline_keyboard.append([
             InlineKeyboardButton(
-                text='Купить аватар', callback_data='buy_new_avatar'
+                text=texts.avatar.BUY_AVATAR_BUTTON, callback_data='buy_new_avatar'
             )
         ])
     return rm

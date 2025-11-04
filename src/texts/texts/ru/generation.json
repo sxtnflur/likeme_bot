@@ -5,7 +5,7 @@
   "NO_GENERATIONS_MORE": "Похоже у вас закончились генерации",
   "NO_AVATAR_ELSE": "У вас пока нет аватара для создания фото. Отправьте ваше фото:",
   "SELECTED_AVATAR_BUTTON": "Аватар: {}",
-  "IS_PRIVATE_BUTTON_PRIVATE": "Закрытый \uD83D\uDD12",
+  "IS_PRIVATE_BUTTON_PRIVATE": "Приватный \uD83D\uDD12",
   "IS_PRIVATE_BUTTON_PUBLIC": "Публичный \uD83D\uDC41",
   "GENERATE_BUTTON": "\uD83D\uDE80 Сгенерировать",
   "ON_FAILED_GENERATION": "<b>Произошла непредвиденная ошибка</b>\nПопробуйте еще раз позже\n\n<i>Ваши генерации не потратились</i>",
@@ -13,7 +13,7 @@
   "YOU_HAVE_ONLY_ONE_AVATAR": "У вас есть только один аватар",
   "AVATAR_NOT_AVAILABLE_NOW": "Этот аватар сейчас недоступен. Обратитесь в поддержку",
   "MODEL_NOT_AVAILABLE_NOW": "Эта модель сейчас недоступна",
-  "FEED_BUTTON": "Смотреть ленту",
+  "FEED_BUTTON": "\uD83C\uDF87 Смотреть ленту",
   "SWITCH_IS_PRIVATE_BUTTON_PRIVATE": "Сделать генерацию приватной \uD83D\uDD12",
   "SWITCH_IS_PRIVATE_BUTTON_PUBLIC": "Сделать генерацию публичной \uD83D\uDC41"
 }

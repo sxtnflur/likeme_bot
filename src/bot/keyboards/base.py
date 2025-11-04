@@ -77,9 +77,10 @@ def main_menu(
         texts: Texts
 ):
     return ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text=texts.main_menu_buttons.CREATE_IMAGE)],
         [KeyboardButton(text=texts.main_menu_buttons.AVATAR),
-         KeyboardButton(text=texts.main_menu_buttons.CREATE_IMAGE)],
+         KeyboardButton(text=texts.main_menu_buttons.PAYMENT)],
         [KeyboardButton(text=texts.main_menu_buttons.FEED),
-         KeyboardButton(text=texts.main_menu_buttons.PAYMENT)]
+         KeyboardButton(text=texts.main_menu_buttons.SUPPORT)]
     ],
         resize_keyboard=True)
