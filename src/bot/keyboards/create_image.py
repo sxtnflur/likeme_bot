@@ -45,12 +45,12 @@ def pre_generate_image(
 
     ikb = [
         [InlineKeyboardButton(
-            text=texts.generation.selected_avatar_button(chosen_avatar.name),
-            callback_data=SelectedAvatarForGenCallback(avatar_id=chosen_avatar.id).pack()
-        )],
-        [InlineKeyboardButton(
             text=texts.generation.is_private_button(is_private=False),
             callback_data=SelectIsPrivateCallback(is_private=False).pack()
+        )],
+        [InlineKeyboardButton(
+            text=texts.generation.selected_avatar_button(chosen_avatar.name),
+            callback_data=SelectedAvatarForGenCallback(avatar_id=chosen_avatar.id).pack()
         )],
         [
             InlineKeyboardButton(

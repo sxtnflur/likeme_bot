@@ -18,7 +18,7 @@ router.message.middleware(MediaMiddleware(latency=5))
 
 @router.message(F.text.in_(get_main_menu_button('CREATE_IMAGE')))
 async def create_image(
-    m: Message, state: FSMContext, texts: Texts
+        m: Message, state: FSMContext, texts: Texts
 ):
     await m.answer(
         texts.generation.START_CREATE_IMAGE,
@@ -29,7 +29,7 @@ async def create_image(
 
 @router.callback_query(F.data == 'create_image')
 async def create_image_call(
-    call: CallbackQuery, state: FSMContext, texts: Texts
+        call: CallbackQuery, state: FSMContext, texts: Texts
 ):
     await call.message.edit_text(
         texts.generation.START_CREATE_IMAGE,
@@ -41,11 +41,11 @@ async def create_image_call(
 @router.message(CreateImageStates.send_prompt)
 @db_connect()
 async def get_prompt(
-    m: Message,
-    state: FSMContext,
-    texts: Texts,
-    db: AsyncSession,
-    media_group: list[Message] = None
+        m: Message,
+        state: FSMContext,
+        texts: Texts,
+        db: AsyncSession,
+        media_group: list[Message] = None
 ):
     get_file_id = lambda x: x.photo[-1].file_id
 
@@ -81,8 +81,8 @@ async def get_prompt(
 
     await m.answer(
         texts.generation.pre_create_image(prompt=prompt,
-                               has_images=bool(file_ids),
-                               chosen_avatar_name=chosen_avatar.name),
+                                          has_images=bool(file_ids),
+                                          chosen_avatar_name=chosen_avatar.name),
         reply_markup=keyboards.pre_generate_image(
             has_prompt=bool(prompt), has_images=bool(file_ids),
             chosen_avatar=chosen_avatar,
@@ -147,10 +147,10 @@ async def select_model(
 @router.callback_query(keyboards.callback_datas.SelectedAvatarForGenCallback.filter())
 @db_connect()
 async def selected_avatar_for_gen(
-    call: CallbackQuery,
-    callback_data: keyboards.callback_datas.SelectedAvatarForGenCallback,
-    db: AsyncSession,
-    texts: Texts
+        call: CallbackQuery,
+        callback_data: keyboards.callback_datas.SelectedAvatarForGenCallback,
+        db: AsyncSession,
+        texts: Texts
 ):
     avatars = await AvatarsRepo(db).get_list(filters=dict(user_id=call.from_user.id))
     avatars = list(map(AvatarSchema.model_validate, avatars))
@@ -172,11 +172,11 @@ async def selected_avatar_for_gen(
 @router.callback_query(keyboards.callback_datas.SelectAvatarForGenCallback.filter())
 @db_connect()
 async def select_avatar_for_gen(
-    call: CallbackQuery,
-    callback_data: keyboards.callback_datas.SelectAvatarForGenCallback,
-    state: FSMContext,
-    db: AsyncSession,
-    texts: Texts
+        call: CallbackQuery,
+        callback_data: keyboards.callback_datas.SelectAvatarForGenCallback,
+        state: FSMContext,
+        db: AsyncSession,
+        texts: Texts
 ):
     try:
         chosen_avatar = await AvatarsRepo(db).get_one(id=callback_data.avatar_id)
@@ -200,10 +200,10 @@ async def select_avatar_for_gen(
 @router.callback_query(keyboards.callback_datas.BackToCreatingImageCallback.filter())
 @db_connect()
 async def back_to_creating_image(
-    call: CallbackQuery,
-    state: FSMContext,
-    db: AsyncSession,
-    texts: Texts
+        call: CallbackQuery,
+        state: FSMContext,
+        db: AsyncSession,
+        texts: Texts
 ):
     data = await state.get_data()
     prompt = data.get('create_image_prompt')
@@ -234,10 +234,10 @@ async def back_to_creating_image(
 
 @router.callback_query(keyboards.callback_datas.SelectRatioCallback.filter())
 async def select_ratio(
-    call: CallbackQuery,
-    callback_data: keyboards.callback_datas.SelectRatioCallback,
-    texts: Texts,
-    state: FSMContext
+        call: CallbackQuery,
+        callback_data: keyboards.callback_datas.SelectRatioCallback,
+        texts: Texts,
+        state: FSMContext
 ):
     print('SELECT RATIO')
     ratio = AspectRatio(callback_data.ratio).next()
@@ -260,10 +260,10 @@ async def select_ratio(
 @router.callback_query(keyboards.callback_datas.StartImageGenCallback.filter())
 @db_connect()
 async def start_gen(
-    call: CallbackQuery,
-    state: FSMContext,
-    texts: Texts,
-    db: AsyncSession
+        call: CallbackQuery,
+        state: FSMContext,
+        texts: Texts,
+        db: AsyncSession
 ):
     data = await state.get_data()
     await state.clear()
@@ -314,9 +314,9 @@ async def start_gen(
 @router.callback_query(keyboards.callback_datas.SwitchIsPrivateCreatedImageCallback.filter())
 @db_connect()
 async def switch_is_private_for_created_image(
-    call: CallbackQuery,
-    callback_data: keyboards.callback_datas.SwitchIsPrivateCreatedImageCallback,
-    db: AsyncSession, texts: Texts
+        call: CallbackQuery,
+        callback_data: keyboards.callback_datas.SwitchIsPrivateCreatedImageCallback,
+        db: AsyncSession, texts: Texts
 ):
     is_private = await image_generator_service.switch_is_private_for_generated_image(
         callback_data.image_id, db=db
