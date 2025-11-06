@@ -91,10 +91,10 @@ def select_avatar_for_gen(avatars: list[AvatarSchema], texts: Texts):
 
 def on_generated_image(image_id: int, is_private: bool, texts: Texts,
                        can_create_avatar: bool | None = None):
-    ikb = [InlineKeyboardButton(
+    ikb = [[InlineKeyboardButton(
             text=texts.generation.switch_is_private_button(is_private),
             callback_data=SwitchIsPrivateCreatedImageCallback(image_id=image_id).pack()
-        )]
+        )]]
     if can_create_avatar is None:
         pass
     elif can_create_avatar:
