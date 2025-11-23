@@ -1,4 +1,8 @@
 from typing import cast
+
+from aiogram.types import BufferedInputFile
+from bot import keyboards
+from enums.generation import AspectRatio
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
@@ -75,33 +79,23 @@ class RemixingService:
         else:
             chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
 
-        available_levels = [model.level for model in chosen_avatar.models]
-        # model_level = await ModelsRepo(db).get_one_field('level', id=image.model_id)
-        # if model_level in available_levels:
-        #     selected_model_level = model_level
-        # else:
-        #     selected_model_level = None
-
-        # print(f'{image.image_url=}')
-        #
-        # image_file = await self.bot.session._session.get(image.image_url)
-        # await self.bot.send_photo(
-        #     chat_id=user_id,
-        #     photo=BufferedInputFile(await image_file.read(), filename='result.jpg')
-        # )
-        # await self.bot.send_message(
-        #     chat_id=user_id,
-        #     text=texts.generation.pre_create_image(
-        #         prompt=image.prompt,
-        #         has_images=bool(image.prompt_images),
-        #         chosen_avatar_name=chosen_avatar.name
-        #     ),
-        #     reply_markup=keyboards.pre_generate_image(
-        #         has_prompt=bool(image.prompt),
-        #         has_images=bool(image.prompt_images),
-        #         chosen_avatar=chosen_avatar,
-        #         texts=texts,
-        #         selected_model_level=selected_model_level,
-        #         selected_ratio=AspectRatio(image.ratio) if image.ratio else AspectRatio.default()
-        #     )
-        # )
+        image_file = await self.bot.session._session.get(image.image_url)
+        await self.bot.send_photo(
+            chat_id=user_id,
+            photo=BufferedInputFile(await image_file.read(), filename='result.jpg')
+        )
+        await self.bot.send_message(
+            chat_id=user_id,
+            text=texts.generation.pre_create_image(
+                prompt=image.prompt,
+                has_images=bool(image.prompt_images),
+                chosen_avatar_name=chosen_avatar.name
+            ),
+            reply_markup=keyboards.pre_generate_image(
+                has_prompt=bool(image.prompt),
+                has_images=bool(image.prompt_images),
+                chosen_avatar=chosen_avatar,
+                texts=texts,
+                selected_ratio=AspectRatio(image.ratio) if image.ratio else AspectRatio.default()
+            )
+        )
