@@ -1,14 +1,12 @@
 import aiogram
 from bot import keyboards
-from database import PaymentsRepo, UsersRepo, ModelsRepo, AvatarsRepo
-from schemas.payment import ImageGenerationsBuy
+from database import PaymentsRepo, UsersRepo, AvatarsRepo
+from schemas.payment import ImageGenerationsBuy, ModelInfo
 from services.avatars_service import AvatarsService
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts import get_texts
 
-
-class PaymentService:
-    image_packages = [
+image_packages = [
         ImageGenerationsBuy(
             id=1, generations=50, price=790
         ),
@@ -19,11 +17,35 @@ class PaymentService:
             id=3, generations=300, price=2790
         )
     ]
-    model_level_0_price: int = 290
-    model_level_1_price: int = 1390
+models = {
+    0: ModelInfo(
+        name='Simple',
+        level=0,
+        price=290,
+        payment_description='Покупка аватара Simple'
+    ),
+    1: ModelInfo(
+        name='Portrait',
+        level=1,
+        price=1390,
+        payment_description='Покупка аватара Portrait'
+    )
+}
 
-    def __init__(self, bot: aiogram.Bot):
+
+class PaymentService:
+    image_packages = image_packages
+    models = models
+    # model_level_0_price: int = 290
+    # model_level_1_price: int = 1390
+
+    def __init__(self, bot: aiogram.Bot,
+                 avatars_service: AvatarsService):
         self.bot = bot
+        self.avatars_service = avatars_service
+
+    def get_model_info(self, level: int):
+        return self.models.get(level)
 
     async def get_image_packages(self) -> list[ImageGenerationsBuy]:
         return self.image_packages
@@ -51,45 +73,26 @@ class PaymentService:
             text=texts.payment.on_success_payment_package(updated_generations)
         )
 
-    async def on_payment_model(self, user_id: int, amount: float, db: AsyncSession,
-                               avatar_id: int, level: int = 1) -> None:
-        await PaymentsRepo(db).add(
+    async def on_payment_avatar(self, user_id: int, amount: float,
+                                model_level: int, db: AsyncSession) -> None:
+        avatar_id = await self.avatars_service.create_avatar(
             user_id=user_id,
-            amount=amount,
-            type='model'
+            level=model_level,
+            db=db
         )
-        model_id = await ModelsRepo(db).add_and_get(
-            dict(avatar_id=avatar_id,
-                 level=level,
-                 status='paid'),
-            'id'
-        )
-        language = await UsersRepo(db).get_one_field('language', id=user_id)
-        texts = get_texts(language)
-        await self.bot.send_message(
-            chat_id=user_id,
-            text=texts.payment.ON_SUCCESS_PAYMENT,
-            reply_markup=keyboards.on_success_payment_model(
-                model_id=model_id,
-                texts=texts,
-                level=level
-            )
-        )
-
-    async def on_payment_avatar(self, user_id: int, amount: float, db: AsyncSession) -> None:
         await PaymentsRepo(db).add(
             user_id=user_id,
             amount=amount,
             type='avatar'
         )
-        await UsersRepo(db).update(
-            filters=dict(id=user_id),
-            updates=dict(can_create_avatar=True)
-        )
+        # await UsersRepo(db).update(
+        #     filters=dict(id=user_id),
+        #     updates=dict(can_create_avatar_level=model_level)
+        # )
         language = await UsersRepo(db).get_one_field('language', id=user_id)
         texts = get_texts(language)
         await self.bot.send_message(
             chat_id=user_id,
             text=texts.payment.ON_SUCCESS_PAYMENT,
-            reply_markup=keyboards.on_success_payment_avatar(texts)
+            reply_markup=keyboards.on_success_payment_avatar(texts, avatar_id)
         )

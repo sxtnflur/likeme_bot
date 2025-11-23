@@ -50,7 +50,7 @@ openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
 openai_service = OpenAIService(
     openai_client=openai_client,
-    default_model='gpt-4.1-mini',
+    default_model='gpt-5-mini',
     default_max_tokens=2000
 )
 remixing_service = RemixingService(bot=bot)
@@ -65,8 +65,8 @@ image_generator_service = ImageGeneratorService(bot=bot, file_storage=files_stor
                                                 remixing_service=remixing_service)
 
 
-avatars_service = AvatarsService(bot=bot, storage=files_storage)
+avatars_service = AvatarsService(bot=bot, storage=files_storage, openai=openai_service)
 
-payments_service = PaymentService(bot=bot)
+payments_service = PaymentService(bot=bot, avatars_service=avatars_service)
 
 users_service = UsersService(bot=bot, storage=files_storage)

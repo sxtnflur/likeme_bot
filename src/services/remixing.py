@@ -1,14 +1,10 @@
 from typing import cast
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, BufferedInputFile
 from aiogram.utils.deep_linking import create_start_link, decode_payload, create_deep_link
-from bot import keyboards
-from database import GeneratedImagesRepo, AvatarsRepo, ModelsRepo
-from enums.generation import AspectRatio
-from schemas.avatars import AvatarSchema, AvatarWithModelsSchema
-from sqlalchemy.ext.asyncio import AsyncSession
+from database import GeneratedImagesRepo, AvatarsRepo
+from schemas.avatars import AvatarSchema
 from texts import Texts
 from config import settings
 
@@ -74,38 +70,38 @@ class RemixingService:
         chosen_avatar = await state.get_value('create_image_chosen_avatar')
         if not chosen_avatar:
             chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=user_id)
-            chosen_avatar = AvatarWithModelsSchema.model_validate(chosen_avatar)
+            chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
             await state.update_data(create_image_chosen_avatar=chosen_avatar.model_dump())
         else:
-            chosen_avatar = AvatarWithModelsSchema.model_validate(chosen_avatar)
+            chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
 
         available_levels = [model.level for model in chosen_avatar.models]
-        model_level = await ModelsRepo(db).get_one_field('level', id=image.model_id)
-        if model_level in available_levels:
-            selected_model_level = model_level
-        else:
-            selected_model_level = None
+        # model_level = await ModelsRepo(db).get_one_field('level', id=image.model_id)
+        # if model_level in available_levels:
+        #     selected_model_level = model_level
+        # else:
+        #     selected_model_level = None
 
-        print(f'{image.image_url=}')
-
-        image_file = await self.bot.session._session.get(image.image_url)
-        await self.bot.send_photo(
-            chat_id=user_id,
-            photo=BufferedInputFile(await image_file.read(), filename='result.jpg')
-        )
-        await self.bot.send_message(
-            chat_id=user_id,
-            text=texts.generation.pre_create_image(
-                prompt=image.prompt,
-                has_images=bool(image.prompt_images),
-                chosen_avatar_name=chosen_avatar.name
-            ),
-            reply_markup=keyboards.pre_generate_image(
-                has_prompt=bool(image.prompt),
-                has_images=bool(image.prompt_images),
-                chosen_avatar=chosen_avatar,
-                texts=texts,
-                selected_model_level=selected_model_level,
-                selected_ratio=AspectRatio(image.ratio) if image.ratio else AspectRatio.default()
-            )
-        )
+        # print(f'{image.image_url=}')
+        #
+        # image_file = await self.bot.session._session.get(image.image_url)
+        # await self.bot.send_photo(
+        #     chat_id=user_id,
+        #     photo=BufferedInputFile(await image_file.read(), filename='result.jpg')
+        # )
+        # await self.bot.send_message(
+        #     chat_id=user_id,
+        #     text=texts.generation.pre_create_image(
+        #         prompt=image.prompt,
+        #         has_images=bool(image.prompt_images),
+        #         chosen_avatar_name=chosen_avatar.name
+        #     ),
+        #     reply_markup=keyboards.pre_generate_image(
+        #         has_prompt=bool(image.prompt),
+        #         has_images=bool(image.prompt_images),
+        #         chosen_avatar=chosen_avatar,
+        #         texts=texts,
+        #         selected_model_level=selected_model_level,
+        #         selected_ratio=AspectRatio(image.ratio) if image.ratio else AspectRatio.default()
+        #     )
+        # )

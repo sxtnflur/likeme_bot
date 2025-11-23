@@ -7,7 +7,7 @@ from config import settings
 from database import db_connect, UsersRepo, AvatarsRepo
 from depends import image_generator_service, remixing_service
 from enums.generation import AspectRatio
-from schemas.avatars import AvatarSchema, AvatarWithModelsSchema
+from schemas.avatars import AvatarSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts.base import get_main_menu_button, Texts
 from bot.states.create_image import CreateImageStates
@@ -77,7 +77,7 @@ async def get_prompt(
         chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=m.from_user.id)
         await state.update_data(create_image_chosen_avatar=chosen_avatar.model_dump())
     else:
-        chosen_avatar = AvatarWithModelsSchema.model_validate(chosen_avatar)
+        chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
 
     await m.answer(
         texts.generation.pre_create_image(prompt=prompt,
@@ -152,11 +152,13 @@ async def selected_avatar_for_gen(
         db: AsyncSession,
         texts: Texts
 ):
-    avatars = await AvatarsRepo(db).get_list(filters=dict(user_id=call.from_user.id))
+    avatars = await AvatarsRepo(db).get_list(filters=dict(user_id=call.from_user.id,
+                                                          status='ready',
+                                                          level=callback_data.level))
     avatars = list(map(AvatarSchema.model_validate, avatars))
-    if len(avatars) <= 1:
+    if len(avatars) <= 0:
         await call.answer(
-            text=texts.generation.YOU_HAVE_ONLY_ONE_AVATAR,
+            text=texts.generation.YOU_DONT_HAVE_SUCH_AVATARS,
             cache_time=3
         )
         return
@@ -164,7 +166,9 @@ async def selected_avatar_for_gen(
     await call.message.edit_text(
         text='<i>Выберите аватар для генерации:</i>',
         reply_markup=keyboards.select_avatar_for_gen(
-            avatars, texts
+            avatars, texts,
+            selected_avatar_id=callback_data.avatar_id,
+            filter_by_level=callback_data.level
         )
     )
 
@@ -178,6 +182,7 @@ async def select_avatar_for_gen(
         db: AsyncSession,
         texts: Texts
 ):
+
     try:
         chosen_avatar = await AvatarsRepo(db).get_one(id=callback_data.avatar_id)
         await UsersRepo(db).update(
@@ -210,13 +215,12 @@ async def back_to_creating_image(
     file_ids = data.get('create_image_file_ids')
     chosen_avatar = data.get('create_image_chosen_avatar')
     ratio = data.get('create_image_ratio')
-    model_level = data.get('create_image_model_level')
 
     if not chosen_avatar:
         chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=call.from_user.id)
-        await state.update_data(create_image_chosen_avatar=chosen_avatar)
+        await state.update_data(create_image_chosen_avatar=chosen_avatar.model_dump())
     else:
-        chosen_avatar = AvatarWithModelsSchema.model_validate(chosen_avatar)
+        chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
 
     await call.message.edit_text(
         texts.generation.pre_create_image(prompt=prompt,
@@ -226,7 +230,6 @@ async def back_to_creating_image(
             has_prompt=bool(prompt), has_images=bool(file_ids),
             chosen_avatar=chosen_avatar,
             texts=texts,
-            selected_model_level=model_level,
             selected_ratio=AspectRatio(ratio) if ratio else AspectRatio.default()
         )
     )
@@ -272,7 +275,6 @@ async def start_gen(
     prompt_image_urls = data.get('create_image_prompt_image_urls', None)
 
     is_private = None
-    level = 0
     ratio = AspectRatio.default()
 
     for row in call.message.reply_markup.inline_keyboard:
@@ -306,8 +308,7 @@ async def start_gen(
         prompt_image_urls=prompt_image_urls,
         is_private=is_private,
         ratio=ratio,
-        session=call.bot.session._session,
-        model_level=level
+        session=call.bot.session._session
     )
 
 

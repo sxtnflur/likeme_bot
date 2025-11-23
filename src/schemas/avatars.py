@@ -15,16 +15,15 @@ class Model(BaseModel):
         from_attributes = True
 
 
+AvatarStatusType = Literal['added', 'in_progress', 'ready']
+
+
 class AvatarSchema(BaseModel):
     id: int
-    name: str
-
-    class Config:
-        from_attributes = True
-
-
-class AvatarWithModelsSchema(AvatarSchema):
-    models: list[Model]
+    name: str | None = None
+    level: int
+    model_data: str | None = None
+    status: AvatarStatusType
 
     class Config:
         from_attributes = True

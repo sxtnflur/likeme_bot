@@ -1,11 +1,13 @@
-from typing import Optional
+from typing import Optional, Literal
 
 from aiogram.filters.callback_data import CallbackData
 from enums.generation import AspectRatio
+from schemas.avatars import AvatarStatusType
 
 
 class SelectedAvatarForGenCallback(CallbackData, prefix='selected-avatar-for-gen-image'):
     avatar_id: int
+    level: int = 0
 
 
 class SelectAvatarForGenCallback(CallbackData, prefix='select-avatar-for-gen'):

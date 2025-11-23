@@ -30,7 +30,7 @@ class OpenAIService:
         resp = await self.client.chat.completions.create(
             messages=messages,
             model=model or self.default_model,
-            max_tokens=max_tokens or self.default_max_tokens or NOT_GIVEN,
+            # max_tokens=max_tokens or self.default_max_tokens or NOT_GIVEN,
             max_completion_tokens=max_completion_tokens or self.default_max_completition_tokens or NOT_GIVEN,
             **kwargs
         )

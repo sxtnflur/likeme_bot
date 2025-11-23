@@ -8,3 +8,4 @@ class NanobananaAvatarStates(StatesGroup):
 
 class CreateModelStates(StatesGroup):
     send_photos = State()
+    send_name = State()

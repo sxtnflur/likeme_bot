@@ -1,0 +1,1 @@
+from .describe_image import DESCRIBE_IMAGE_PROMPT

@@ -2,12 +2,15 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from bot import keyboards
+from bot.exceptions import SendToUserException, NoBoughtAvatarsException
+from bot.keyboards import BuyAvatarCallback, StartFillAddedAvatarCallback
 from bot.middlewares.media_group import MediaMiddleware
 from bot.routers.start_messages_chain import chain_messages
 from bot.states import NanobananaAvatarStates, CreateModelStates
-from database import AvatarsRepo, db_connect, ModelsRepo, UsersRepo
+from database import AvatarsRepo, db_connect, UsersRepo
 from depends import avatars_service, payment_factory, payments_service
 from schemas.avatars import AvatarSchema
+from services.payment import models
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts.base import Texts, get_main_menu_button
 
@@ -20,8 +23,7 @@ router.message.middleware(MediaMiddleware(1))
 async def start_avatars(
     m: Message,
     texts: Texts,
-    db: AsyncSession,
-    state: FSMContext
+    db: AsyncSession
 ):
     avatars = await AvatarsRepo(db).get_list(
         filters=dict(user_id=m.from_user.id),
@@ -29,23 +31,13 @@ async def start_avatars(
         limit=50
     )
     avatars = list(map(AvatarSchema.model_validate, avatars))
-    if not avatars:
-        await m.answer(
-            text=texts.base.FIRST_MESSAGE
-        )
-        await state.set_state(NanobananaAvatarStates.send_photo)
-        return
-
-    can_create_avatar = await UsersRepo(db).get_one_field('can_create_avatar', id=m.from_user.id)
-
     await m.answer(
         texts.avatar.AVATARS_LIST,
         reply_markup=keyboards.avatars_list(
             texts=texts,
             avatars=avatars,
             page=0,
-            limit=50,
-            can_create_avatar=can_create_avatar
+            limit=50
         )
     )
 
@@ -62,27 +54,33 @@ async def avatars_list(
         offset=callback_data.page * callback_data.limit,
         limit=callback_data.limit
     )
-    can_create_avatar = await UsersRepo(db).get_one_field('can_create_avatar', id=call.from_user.id)
     await call.message.edit_text(
         texts.avatar.AVATARS_LIST,
         reply_markup=keyboards.avatars_list(
             texts=texts,
             avatars=list(map(AvatarSchema.model_validate, avatars)),
             page=callback_data.page,
-            limit=callback_data.limit,
-            can_create_avatar=can_create_avatar
+            limit=callback_data.limit
         )
     )
 
 
-@router.callback_query(F.data == 'create_new_avatar')
-async def create_avatar(
-    call: CallbackQuery, state: FSMContext, texts: Texts
+@router.callback_query(keyboards.callback_datas.SelectAvatarCallback.filter())
+@db_connect()
+async def select_avatar(
+    call: CallbackQuery,
+    callback_data: keyboards.callback_datas.SelectAvatarCallback,
+    texts: Texts,
+    db: AsyncSession
 ):
-    await chain_messages[-1].send(
-        chat_id=call.message.chat.id,
-        state=state,
-        texts=texts
+    print(f'{callback_data.avatar_id=}')
+    avatar = await AvatarsRepo(db).get_one(id=callback_data.avatar_id)
+    print(f'{avatar=}')
+    await call.message.edit_text(
+        texts.avatar.avatar_page(avatar),
+        reply_markup=keyboards.avatar_page(
+            texts=texts, avatar=avatar
+        )
     )
 
 
@@ -96,7 +94,7 @@ async def create_simple_avatar(
     await state.update_data(nano_avatar_id=file_id)
 
     if not await AvatarsRepo(db).exists(user_id=m.from_user.id, name=m.from_user.full_name):
-        reply_markup = keyboards.input_simple_avatar_name(texts)
+        reply_markup = keyboards.input_avatar_name(texts, level=0)
         text = texts.avatar.ON_SEND_AVATAR_PHOTO_IF_CAN_TAKE_ACCOUNT_NAME
     else:
         reply_markup = None
@@ -118,22 +116,25 @@ async def get_name_for_simple_avatar(
     db: AsyncSession,
     texts: Texts
 ):
-    file_id = await state.get_value('nano_avatar_id')
+    if not m.text:
+        await m.answer('Отправьте только текст')
+        return
+    data = await state.get_data()
+    file_id = data.get('nano_avatar_id')
     avatar_name = m.text.strip()
     await state.clear()
 
-    can_create_avatar = await UsersRepo(db).get_one_field('can_create_avatar', id=m.from_user.id)
-    if not can_create_avatar:
-        await m.answer(
-            texts.payment.buy_avatar(payments_service.model_level_0_price),
-            reply_markup=await get_buy_new_avatar_kb(user_id=m.from_user.id, texts=texts)
+    inputed_avatar_id: int | None = data.get('inputed_avatar_id')
+    if not inputed_avatar_id:
+        inputed_avatar_id = await AvatarsRepo(db).get_one_field(
+            field='id', user_id=m.from_user.id, status='added', level=0
         )
-        return
 
     wait_msg = await m.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR)
-    await avatars_service.add_simple_avatar(
+    await avatars_service.train_simple_avatar(
         user_id=m.from_user.id,
         file_id=file_id,
+        avatar_id=inputed_avatar_id,
         name=avatar_name,
         db=db
     )
@@ -154,18 +155,23 @@ async def input_my_name_for_avatar(
     call: CallbackQuery, state: FSMContext,
     db: AsyncSession, texts: Texts
 ):
-    file_id = await state.get_value('nano_avatar_id')
+    data = await state.get_data()
+    file_id = data.get('nano_avatar_id')
     avatar_name = call.from_user.full_name
 
-    can_create_avatar = await UsersRepo(db).get_one_field('can_create_avatar', id=call.from_user.id)
-    if not can_create_avatar:
-        await buy_new_avatar(call, texts)
-        return
+    inputed_avatar_id: int | None = data.get('inputed_avatar_id')
+    if not inputed_avatar_id:
+        inputed_avatar_id = await AvatarsRepo(db).get_one_field(
+            field='id', user_id=call.from_user.id, status='added', level=0
+        )
+        if not inputed_avatar_id:
+            raise NoBoughtAvatarsException
 
     wait_msg = await call.message.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR)
-    await avatars_service.add_simple_avatar(
+    await avatars_service.train_simple_avatar(
         user_id=call.from_user.id,
         file_id=file_id,
+        avatar_id=inputed_avatar_id,
         name=avatar_name,
         db=db
     )
@@ -177,25 +183,6 @@ async def input_my_name_for_avatar(
     await call.message.answer(
         texts.avatar.on_create_avatar(avatar_name),
         reply_markup=keyboards.on_create_avatar(texts)
-    )
-
-
-@router.callback_query(keyboards.callback_datas.SelectAvatarCallback.filter())
-@db_connect()
-async def select_avatar(
-    call: CallbackQuery,
-    callback_data: keyboards.callback_datas.SelectAvatarCallback,
-    texts: Texts,
-    db: AsyncSession
-):
-    print(f'{callback_data.avatar_id=}')
-    avatar = await AvatarsRepo(db).get_one(id=callback_data.avatar_id)
-    print(f'{avatar=}')
-    await call.message.edit_text(
-        texts.avatar.avatar_page(avatar),
-        reply_markup=keyboards.avatar_page(
-            texts=texts, avatar_id=avatar.id, models=avatar.models
-        )
     )
 
 
@@ -236,45 +223,53 @@ async def get_photos_to_model(
         )
         return
 
-    model_id = await state.get_value('model_id')
-    if not model_id:
-        model_id = await ModelsRepo(db).get_one_field(
-            field='id',
-            user_id=m.from_user.id,
-            status='paid',
-            diffusers_url=None
+    inputed_avatar_id = await state.get_value('inputed_avatar_id')
+    if not inputed_avatar_id:
+        inputed_avatar_id = await AvatarsRepo(db).get_one_field(
+            field='id', user_id=m.from_user.id, status='added', level=1
         )
+        if not inputed_avatar_id:
+            raise NoBoughtAvatarsException
 
-    if not model_id:
-        raise Exception('Не найден model_id для юзера {}'.format(m.from_user.id))
-
-    await avatars_service.create_modeling_model(
-        user_id=m.from_user.id,
+    await avatars_service.start_train_portrait_avatar(
         file_ids=list(map(lambda x: x.photo[-1].file_id, media_group)),
-        model_id=model_id,
+        avatar_id=inputed_avatar_id,
         db=db
+    )
+
+    if not await AvatarsRepo(db).exists(user_id=m.from_user.id, name=m.from_user.full_name):
+        reply_markup = keyboards.input_avatar_name(texts, level=1)
+        text = texts.avatar.ON_SEND_AVATAR_PHOTO_IF_CAN_TAKE_ACCOUNT_NAME
+    else:
+        reply_markup = None
+        text = texts.avatar.ON_SEND_AVATAR_PHOTO
+
+    await state.update_data(portrait_file_ids=list(map(lambda x: x.photo[-1].file_id, media_group)))
+    await m.answer(
+        text=text, reply_markup=reply_markup
     )
 
     await m.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR_PRO)
 
 
-async def get_buy_new_avatar_kb(
-    user_id: int, texts: Texts
-):
-    price_simple = payments_service.model_level_0_price
-    pay_data_simple = await payment_factory.create_payment(
-        amount=price_simple,
-        description='Покупка Simple аватара',
-        payment_method='yookassa',
-        metadata=dict(
-            user_id=user_id,
-            model_level=1,
-            type='avatar'
+@router.message(CreateModelStates.send_name, F.text)
+@db_connect()
+async def get_model_name_portait(m: Message, state: FSMContext, db: AsyncSession):
+    data = await state.get_data()
+    portrait_file_ids = data.get('portrait_file_ids')
+    inputed_avatar_id: int | None = data.get('inputed_avatar_id')
+    avatar_name = m.text.strip()
+    if not inputed_avatar_id:
+        inputed_avatar_id = await AvatarsRepo(db).get_one_field(
+            field='id', user_id=m.from_user.id, status='added', level=0
         )
-    )
-    return keyboards.pay_url_kb(
-        pay_url=pay_data_simple.url, texts=texts
-    )
+        if not inputed_avatar_id:
+            raise NoBoughtAvatarsException
+    # await avatars_service.start_train_portrait_avatar(
+    #     file_ids=portrait_file_ids,
+    #     avatar_id=inputed_avatar_id,
+    #     db=db
+    # )
 
 
 @router.callback_query(F.data == 'buy_new_avatar')
@@ -282,6 +277,56 @@ async def buy_new_avatar(
     call: CallbackQuery, texts: Texts
 ):
     await call.message.answer(
-        texts.payment.buy_avatar(payments_service.model_level_0_price),
-        reply_markup=await get_buy_new_avatar_kb(user_id=call.from_user.id, texts=texts)
+        texts.payment.BUY_AVATAR,
+        reply_markup=keyboards.buy_avatar(
+            texts=texts, simple_price=models.get(0).price, portrait_price=models.get(1).price
+        )
     )
+
+
+@router.callback_query(BuyAvatarCallback.filter())
+async def buy_avatar_select_model(
+    call: CallbackQuery, callback_data: BuyAvatarCallback,
+    texts: Texts
+):
+
+    model = payments_service.get_model_info(callback_data.level)
+    pay_data = await payment_factory.create_payment(
+        amount=model.price,
+        description=model.payment_description,
+        session=call.bot.session._session,
+        metadata=dict(
+            user_id=call.from_user.id,
+            model_level=model.level,
+            type='avatar'
+        )
+    )
+    await call.message.edit_text(
+        'Оплата',
+        reply_markup=keyboards.pay_url_kb(
+            pay_url=pay_data.url, texts=texts,
+            back_callback_data='buy_new_avatar'
+        )
+    )
+
+
+@router.callback_query(StartFillAddedAvatarCallback.filter())
+@db_connect()
+async def start_fill_added_avatar(
+    call: CallbackQuery,
+    callback_data: StartFillAddedAvatarCallback,
+    db: AsyncSession,
+    state: FSMContext,
+    texts: Texts
+):
+    print('start_fill_added_avatar')
+    avatar_level = await AvatarsRepo(db).get_one_field('level', id=callback_data.avatar_id)
+    print(f'{avatar_level=}')
+    await state.update_data(inputed_avatar_id=callback_data.avatar_id)
+    if avatar_level == 0:
+        await chain_messages[-1].send(chat_id=call.message.chat.id, state=state, texts=texts)
+    elif avatar_level == 1:
+        await call.message.answer(
+            'Отправьте ваши 10 фото'
+        )
+        await state.set_state(CreateModelStates.send_photos)

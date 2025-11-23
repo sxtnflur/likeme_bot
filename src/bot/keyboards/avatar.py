@@ -1,18 +1,19 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bot.keyboards.base import create_scrolling_kb
 from bot.keyboards.callback_datas.avatar import (
-    InputMyNameForAvatarCallback, AvatarsListCallback, SelectAvatarCallback, LoadPhotosToModelCallback
+    InputMyNameForAvatarCallback, AvatarsListCallback, SelectAvatarCallback, LoadPhotosToModelCallback,
+    StartFillAddedAvatarCallback
 )
 from .callback_datas.payment import BuyModelCallback
 from schemas.avatars import AvatarSchema, Model
 from texts import Texts
 
 
-def input_simple_avatar_name(texts: Texts):
+def input_avatar_name(texts: Texts, level: int):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text=texts.avatar.INPUT_MY_NAME_FOR_MODEL,
-            callback_data=InputMyNameForAvatarCallback().pack()
+            callback_data=InputMyNameForAvatarCallback(level=level).pack()
         )]
     ])
 
@@ -28,59 +29,44 @@ def on_create_avatar(texts: Texts):
 
 def avatars_list(
     texts: Texts,
-    avatars: list[AvatarSchema], page: int = 0, limit: int = 10,
-    can_create_avatar: bool | None = None
+    avatars: list[AvatarSchema], page: int = 0, limit: int = 10
 ) -> InlineKeyboardMarkup:
-    rm = create_scrolling_kb(
-        page=page,
-        objs=avatars,
-        callback_data=AvatarsListCallback,
-        get_btn=lambda avatar: InlineKeyboardButton(
-            text=avatar.name,
-            callback_data=SelectAvatarCallback(avatar_id=avatar.id).pack()
-        ),
-        limit=limit
-    )
-    if can_create_avatar is None:
-        pass
-    elif can_create_avatar:
-        rm.inline_keyboard.append([
-            InlineKeyboardButton(
-                text=texts.avatar.CREATE_AVATAR_BUTTON, callback_data='create_new_avatar'
-            )
-        ])
-    else:
+    if avatars:
+        rm = create_scrolling_kb(
+            page=page,
+            objs=avatars,
+            callback_data=AvatarsListCallback,
+            get_btn=lambda avatar: InlineKeyboardButton(
+                text=avatar.name or texts.avatar.get_model_level_name(avatar.level),
+                callback_data=SelectAvatarCallback(avatar_id=avatar.id).pack()
+            ),
+            limit=limit
+        )
         rm.inline_keyboard.append([
             InlineKeyboardButton(
                 text=texts.avatar.BUY_AVATAR_BUTTON, callback_data='buy_new_avatar'
             )
         ])
-    return rm
+        return rm
+    else:
+        return InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text=texts.avatar.BUY_AVATAR_BUTTON, callback_data='buy_new_avatar'
+            )]
+        ])
 
 
 def avatar_page(
     texts: Texts,
-    avatar_id: int,
-    models: list[Model]
+    avatar: AvatarSchema
 ) -> InlineKeyboardMarkup:
     ikb = []
-    model_lvl1 = list(filter(lambda x: x.level == 1, models))
-    if not model_lvl1:
-        ikb.append([
-            InlineKeyboardButton(
-                text=texts.avatar.BUY_LEVEL_1_BUTTON,
-                callback_data=BuyModelCallback(avatar_id=avatar_id, level=1).pack()
-            )
-        ])
-    elif model_lvl1:
-        model_lvl1 = model_lvl1[0]
-        if model_lvl1.status == 'paid':
-            ikb.append([
-                InlineKeyboardButton(
-                    text='Загрузить мои фото в Portrait',
-                    callback_data=LoadPhotosToModelCallback(model_id=model_lvl1.id).pack()
-                )
-            ])
+
+    if avatar.status == 'added':
+        ikb.append([InlineKeyboardButton(
+            text='Настроить',
+            callback_data=StartFillAddedAvatarCallback(avatar_id=avatar.id).pack()
+        )])
 
     ikb.append([
         InlineKeyboardButton(

@@ -20,15 +20,8 @@ class FalWebhookUseCase:
         if status != 'OK':
             return
 
-        metadata = await FalRequestsRepo(db=self.db).get_one_field('data', id=request_id)
-
-        model_id = metadata['model_id']
-        print(f'{model_id=}')
-
-        await self.avatars_service.add_modeling_model_to_avatar(
+        await self.avatars_service.on_trained_portrait_avatar(
+            request_id=request_id,
             diffusers_url=diffusers_url,
-            model_id=model_id,
             db=self.db
         )
-
-        await FalRequestsRepo(db=self.db).delete(id=request_id)

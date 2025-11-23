@@ -40,8 +40,7 @@ class ImageGeneratorService:
                              ratio: AspectRatio,
                              session: aiohttp.ClientSession,
                              prompt_image_file_ids: list[str] | None = None,
-                             prompt_image_urls: list[str] | None = None,
-                             model_level: int = 0
+                             prompt_image_urls: list[str] | None = None
                              ) -> None:
         try:
             updated_generations = await UsersRepo(db).decrease_field(
@@ -62,17 +61,17 @@ class ImageGeneratorService:
                 texts.generation.NO_AVATAR_ELSE
             )
 
-        model = list(filter(lambda x: x.level == model_level, avatar.models))[0]
+        # model = list(filter(lambda x: x.level == model_level, avatar.models))[0]
         if not prompt_image_urls:
             prompt_image_urls = []
 
         async with self.storage.start_transaction() as cdn:
             try:
-                if model_level == 0:
-                    if not model.photos:
-                        raise Exception('Нет photos')
-
-                    image_urls = model.photos
+                if avatar.level == 0:
+                    # if not model.photos:
+                    #     raise Exception('Нет photos')
+                    image_urls = [avatar.model_data]
+                    # image_urls = model.photos
                     if prompt_image_file_ids and not prompt_image_urls:
                         for file_id in prompt_image_file_ids:
                             file_ = await self.bot.get_file(file_id)
@@ -93,8 +92,8 @@ class ImageGeneratorService:
                         num_images=1,
                         aspect_ratio=f'{ratio_[0]}:{ratio_[1]}'
                     )
-                elif model_level == 1:
-                    if not model.diffusers_url:
+                elif avatar.level == 1:
+                    if not avatar.model_data['diffusers_url']:
                         raise SendToUserException(
                             'Ваша модель невалидна', add_support=True
                         )
@@ -107,7 +106,7 @@ class ImageGeneratorService:
                     else:
                         coro = flux.generate_images(
                             prompt,
-                            lora=model.diffusers_url,
+                            lora=avatar.model_data['diffusers_url'],
                             photo_format=ratio.get_wh()
                         )
                 else:
@@ -164,7 +163,7 @@ class ImageGeneratorService:
         image_id = await GeneratedImagesRepo(db).add_and_get(
             dict(
                 user_id=user_id,
-                model_id=model.id,
+                avatar_id=avatar.id,
                 image_url=res_image_url,
                 prompt=prompt,
                 prompt_images=prompt_image_urls,

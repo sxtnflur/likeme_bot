@@ -47,7 +47,9 @@ class BaseRepo(Protocol[T]):
             .filter_by(**filters)
         )
 
-    async def get_list(self, filters: dict | None = None, offset: int = 0, limit: int | None = 10) -> list[T]:
+    async def get_list(
+        self, filters: dict | None = None, offset: int = 0, limit: int | None = 10
+    ) -> list[T]:
         stmt = select(self.model)
         if filters:
             stmt = stmt.filter_by(**filters)

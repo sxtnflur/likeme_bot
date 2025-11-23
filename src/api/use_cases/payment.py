@@ -18,16 +18,10 @@ class PaymentUseCase:
                     db=self.db
                 )
 
-            case 'model':
-                await self.payment_service.on_payment_model(
-                    user_id=int(metadata['user_id']),
-                    avatar_id=int(metadata['avatar_id']),
-                    amount=amount,
-                    db=self.db
-                )
             case 'avatar':
                 await self.payment_service.on_payment_avatar(
                     user_id=int(metadata['user_id']),
+                    model_level=int(metadata['model_level']),
                     amount=amount,
                     db=self.db
                 )

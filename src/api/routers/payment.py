@@ -10,6 +10,7 @@ async def pay_yookassa(
     request: Request,
     payments_use_case: PaymentUseCase
 ) -> dict:
+    print(f"{request.client.host=} {request.client.port=}")
     body = await request.body()
     payload: WebhookPayload = WebhookPayload.parse_raw(body)
     await payments_use_case.on_payment(

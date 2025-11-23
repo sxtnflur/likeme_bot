@@ -4,7 +4,7 @@ from bot.keyboards.callback_datas.create_image import SelectedAvatarForGenCallba
     SelectRatioCallback, SwitchIsPrivateCreatedImageCallback
 from config import settings
 from enums.generation import AspectRatio
-from schemas.avatars import AvatarSchema, AvatarWithModelsSchema
+from schemas.avatars import AvatarSchema
 from texts import Texts
 from .base import create_list_kb
 
@@ -30,18 +30,17 @@ def to_create_image(texts: Texts):
 def pre_generate_image(
     has_prompt: bool,
     has_images: bool,
-    chosen_avatar: AvatarWithModelsSchema,
+    chosen_avatar: AvatarSchema,
     texts: Texts,
-    selected_model_level: int | None = None,
     selected_ratio: AspectRatio = AspectRatio.default()
 ):
-    models = list(filter(lambda x: x.status == 'ready', chosen_avatar.models))
-    levels = list(map(lambda x: x.level, models))
-    if not levels:
-        raise Exception(f'У аватара {chosen_avatar.id} нет моделей (models={models})')
+    # models = list(filter(lambda x: x.status == 'ready', chosen_avatar.models))
+    # levels = list(map(lambda x: x.level, models))
+    # if not levels:
+    #     raise Exception(f'У аватара {chosen_avatar.id} нет моделей (models={models})')
 
-    if selected_model_level is None or selected_model_level not in levels:
-        selected_model_level = max(levels)
+    # if selected_model_level is None or selected_model_level not in levels:
+    #     selected_model_level = max(levels)
 
     ikb = [
         [InlineKeyboardButton(
@@ -52,17 +51,17 @@ def pre_generate_image(
             text=texts.generation.selected_avatar_button(chosen_avatar.name),
             callback_data=SelectedAvatarForGenCallback(avatar_id=chosen_avatar.id).pack()
         )],
-        [
-            InlineKeyboardButton(
-                text=texts.avatar.get_model_level_name(level=model.level,
-                                                       mark_as_chosen=model.level == selected_model_level),
-                callback_data=SelectModelCallback(
-                    level=model.level,
-                    is_selected=model.level == selected_model_level
-                ).pack()
-            )
-            for model in models
-        ],
+        # [
+        #     InlineKeyboardButton(
+        #         text=texts.avatar.get_model_level_name(level=model.level,
+        #                                                mark_as_chosen=model.level == selected_model_level),
+        #         callback_data=SelectModelCallback(
+        #             level=model.level,
+        #             is_selected=model.level == selected_model_level
+        #         ).pack()
+        #     )
+        #     for model in models
+        # ],
         [InlineKeyboardButton(
             text=texts.generation.get_text_btn_ratio(selected_ratio),
             callback_data=SelectRatioCallback(ratio=selected_ratio).pack()
@@ -76,13 +75,31 @@ def pre_generate_image(
     return InlineKeyboardMarkup(inline_keyboard=ikb)
 
 
-def select_avatar_for_gen(avatars: list[AvatarSchema], texts: Texts):
+def select_avatar_for_gen(avatars: list[AvatarSchema], texts: Texts,
+                          selected_avatar_id: int, filter_by_level: int = 0):
     ikb = create_list_kb(
         objs=avatars,
         get_btn=lambda x: InlineKeyboardButton(
-            text=x.name, callback_data=SelectAvatarForGenCallback(avatar_id=x.id).pack()
+            text=x.name, callback_data=SelectAvatarForGenCallback(
+                avatar_id=x.id
+            ).pack()
         )
     )
+    ikb.append([
+        InlineKeyboardButton(
+            text=texts.generation.SHOWN_AVATARS_WITH_MODEL, callback_data='-'
+        )
+    ])
+    ikb.append([
+        InlineKeyboardButton(
+            text=texts.avatar.get_model_level_name(0, mark_as_chosen=filter_by_level == 0),
+            callback_data=SelectedAvatarForGenCallback(avatar_id=selected_avatar_id, level=0).pack()
+        ),
+        InlineKeyboardButton(
+            text=texts.avatar.get_model_level_name(1, mark_as_chosen=filter_by_level == 1),
+            callback_data=SelectedAvatarForGenCallback(avatar_id=selected_avatar_id, level=1).pack()
+        )
+    ])
     ikb.append([InlineKeyboardButton(
         text=texts.base.BACK_BUTTON, callback_data=BackToCreatingImageCallback().pack()
     )])

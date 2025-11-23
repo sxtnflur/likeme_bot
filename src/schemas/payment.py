@@ -8,3 +8,10 @@ class GenerationsBuy(BaseModel):
 
 
 class ImageGenerationsBuy(GenerationsBuy): ...
+
+
+class ModelInfo(BaseModel):
+    name: str
+    level: int
+    price: int
+    payment_description: str

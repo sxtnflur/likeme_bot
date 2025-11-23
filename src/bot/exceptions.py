@@ -1,6 +1,9 @@
 from aiogram import Dispatcher
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import InlineKeyboardMarkup, Message, ErrorEvent
+from bot import keyboards
+from services.payment import models
+from texts import Texts
 
 
 class SendToUserException(Exception):
@@ -26,6 +29,14 @@ class SendToUserException(Exception):
 
     def __repr__(self):
         return self.__str__()
+
+
+class NoBoughtAvatarsException(SendToUserException):
+    def __init__(self, texts: Texts):
+        super().__init__(
+            text='У вас нет купленного аватара для обучения',
+            reply_markup=keyboards.buy_avatar(texts, models.get(0).price, models.get(1).price)
+        )
 
 
 async def callback(event: ErrorEvent):

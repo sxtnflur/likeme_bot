@@ -8,7 +8,7 @@ from bot.routers.start_messages_chain import chain_messages
 from bot.states import NanobananaAvatarStates
 from config import settings
 from database import db_connect, UsersRepo
-from depends import users_service, remixing_service
+from depends import users_service, remixing_service, avatars_service
 from services.ai.fal import upload_zip_by_file_ids
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts import Texts, get_texts, get_main_menu_button
@@ -26,9 +26,6 @@ async def start(
 ):
     await state.clear()
 
-    # user_exists = await UsersRepo(db).exists(id=m.from_user.id)
-    user_has_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id)
-
     await users_service.add_user_from_aiogram(user=m.from_user, language=m.from_user.language_code, db=db)
     language = await UsersRepo(db).get_one_field('language', id=m.from_user.id)
     texts = get_texts(language)
@@ -44,14 +41,21 @@ async def start(
         ):
             return
 
-    if user_has_avatar:
-        await m.answer(
-            texts.base.START_MESSAGE,
-            reply_markup=keyboards.main_menu(texts)
+    user_has_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id)
+    if not user_has_avatar:
+        await avatars_service.create_avatar(
+            user_id=m.from_user.id, level=0, db=db
         )
-    else:
         await chain_messages[0].send(chat_id=m.from_user.id, state=state, texts=texts)
-        await state.set_state(NanobananaAvatarStates.send_photo)
+    else:
+        user_has_ready_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id, status='ready')
+        if user_has_ready_avatar:
+            await m.answer(
+                texts.base.START_MESSAGE,
+                reply_markup=keyboards.main_menu(texts)
+            )
+        else:
+            await chain_messages[0].send(chat_id=m.from_user.id, state=state, texts=texts)
 
 
 @router.message(F.text.in_(get_main_menu_button('FEED')))

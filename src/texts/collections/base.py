@@ -1,9 +1,10 @@
 import textwrap
 
 from config import settings
+from database import models
 from enums import ModelStatusType
 from enums.generation import AspectRatio
-from schemas.avatars import AvatarWithModelsSchema
+from schemas.avatars import AvatarSchema
 from schemas.payment import GenerationsBuy
 from texts.json import TextsCollectionJson
 from typing_extensions import Literal
@@ -62,24 +63,17 @@ class AvatarTexts(TextsCollectionJson):
         return text
 
     def get_model_status(self, status: ModelStatusType):
-        if status == 'paid':
-            return 'Оплачен (Загрузите фото)'
+        if status == 'added':
+            return 'Ожидает настройки'
         elif status == 'training':
             return 'Обучается... ⏳'
         else:
             return 'Готов ✅'
 
-    def avatar_page(self, avatar: AvatarWithModelsSchema) -> str:
-        available_levels = {
-            model.level: model for model in avatar.models
-        }
+    def avatar_page(self, avatar: AvatarSchema) -> str:
         return self.AVATAR_PAGE.format(
-            name=avatar.name,
-            models='\n'.join([
-                '- <b>' + self.get_model_level_name(level) + '</b>: '
-                + (self.get_model_status(available_levels.get(level).status) if level in available_levels else '❌')
-                for level in (0, 1)
-            ])
+            name=avatar.name or '-',
+            status=self.get_model_status(avatar.status)
         )
 
 
@@ -102,6 +96,9 @@ class GenerationTexts(TextsCollectionJson):
     WAIT_MESSAGE: str
 
     YOU_HAVE_ONLY_ONE_AVATAR: str
+    # MODEL: str
+    SHOWN_AVATARS_WITH_MODEL: str
+    YOU_DONT_HAVE_SUCH_AVATARS: str
     AVATAR_NOT_AVAILABLE_NOW: str
     MODEL_NOT_AVAILABLE_NOW: str
 
@@ -194,6 +191,7 @@ class PaymentTexts(TextsCollectionJson):
     BUY_IMAGE_GENERATIONS: str
     BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON: str
     BUY_AVATAR: str
+    PAY_AVATAR: str
 
     SELECT_PACKAGE: str
 
@@ -214,7 +212,7 @@ class PaymentTexts(TextsCollectionJson):
     def select_package(self, obj: GenerationsBuy):
         return self.SELECT_PACKAGE
 
-    def buy_avatar(self, price: int) -> str:
+    def pay_avatar(self, price: int) -> str:
         return self.BUY_AVATAR.format(price)
 
     def buy_model_level_1(self, price: int) -> str:

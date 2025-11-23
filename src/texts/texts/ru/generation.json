@@ -15,5 +15,8 @@
   "MODEL_NOT_AVAILABLE_NOW": "Эта модель сейчас недоступна",
   "FEED_BUTTON": "\uD83C\uDF87 Смотреть ленту",
   "SWITCH_IS_PRIVATE_BUTTON_PRIVATE": "Сделать генерацию приватной \uD83D\uDD12",
-  "SWITCH_IS_PRIVATE_BUTTON_PUBLIC": "Сделать генерацию публичной \uD83D\uDC41"
+  "SWITCH_IS_PRIVATE_BUTTON_PUBLIC": "Сделать генерацию публичной \uD83D\uDC41",
+  "YOU_DONT_HAVE_SUCH_AVATARS": "У вас нет аватаров с такой моделью",
+  "MODEL": "Модель:",
+  "SHOWN_AVATARS_WITH_MODEL": "Показаны аватары с моделью:"
 }
