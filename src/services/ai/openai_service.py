@@ -196,5 +196,7 @@ class OpenAIService:
                     has_tries=has_tries,
                     **kwargs
                 )
-
-        return resp.choices[0].message.parsed
+            else:
+                raise e
+        else:
+            return resp.choices[0].message.parsed
