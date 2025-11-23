@@ -32,8 +32,8 @@ def create_scrolling_kb(
         width: int = 2,
         additional_btns: list[list[InlineKeyboardButton]] | None = None,
         pag_btn_additional_kwargs: dict | None = None,
-        pag_left_button: str = '<',
-        pag_right_button: str = '>'
+        pag_left_button: str = '⬅',
+        pag_right_button: str = '➡'
 ) -> InlineKeyboardMarkup:
     inl_kb = create_list_kb(objs, get_btn, width)
     pag_btns = []
@@ -47,6 +47,9 @@ def create_scrolling_kb(
             pag_btns.append(InlineKeyboardButton(
                 text=pag_left_button, callback_data=callback_data(page=page - 1, limit=limit).pack()
             ))
+
+    print(f'{len(objs)=}')
+    print(f'{limit=}')
     if len(objs) == limit:
         if pag_btn_additional_kwargs:
             pag_btns.append(InlineKeyboardButton(
@@ -57,6 +60,8 @@ def create_scrolling_kb(
             pag_btns.append(InlineKeyboardButton(
                 text=pag_right_button, callback_data=callback_data(page=page + 1, limit=limit).pack()
             ))
+    inl_kb.append(pag_btns)
+
     if additional_btns:
         inl_kb += additional_btns
 

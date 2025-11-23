@@ -28,16 +28,15 @@ async def start_avatars(
     avatars = await AvatarsRepo(db).get_list(
         filters=dict(user_id=m.from_user.id),
         offset=0,
-        limit=50
+        limit=10
     )
-    avatars = list(map(AvatarSchema.model_validate, avatars))
     await m.answer(
-        texts.avatar.AVATARS_LIST,
+        texts.avatar.avatars_list(has_new_avatars=any([1 for i in avatars if i.status != 'ready'])),
         reply_markup=keyboards.avatars_list(
             texts=texts,
             avatars=avatars,
             page=0,
-            limit=50
+            limit=10
         )
     )
 
@@ -55,7 +54,7 @@ async def avatars_list(
         limit=callback_data.limit
     )
     await call.message.edit_text(
-        texts.avatar.AVATARS_LIST,
+        texts.avatar.avatars_list(has_new_avatars=any([1 for i in avatars if i.status != 'ready'])),
         reply_markup=keyboards.avatars_list(
             texts=texts,
             avatars=list(map(AvatarSchema.model_validate, avatars)),

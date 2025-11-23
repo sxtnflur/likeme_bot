@@ -22,9 +22,12 @@ async def buy_start(
     my_image_generations = await UsersRepo(db).get_one_field(
         field='image_generations', id=m.from_user.id
     )
+    packages = await payments_service.get_image_packages()
     await m.answer(
         texts.payment.buy_start(my_image_generations=my_image_generations),
-        reply_markup=keyboards.start_buy(texts)
+        reply_markup=keyboards.image_packages_list(
+            pieces=packages, texts=texts
+        )
     )
 
 
@@ -36,19 +39,9 @@ async def buy_start_call(
     my_image_generations = await UsersRepo(db).get_one_field(
         field='image_generations', id=call.from_user.id
     )
-    await call.message.edit_text(
-        texts.payment.buy_start(my_image_generations=my_image_generations),
-        reply_markup=keyboards.start_buy(texts)
-    )
-
-
-@router.callback_query(keyboards.callback_datas.BuyImageGenerationsCallback.filter())
-async def buy_image_gens(
-    call: CallbackQuery, texts: Texts
-):
     packages = await payments_service.get_image_packages()
     await call.message.edit_text(
-        texts.payment.BUY_IMAGE_GENERATIONS,
+        texts.payment.buy_start(my_image_generations=my_image_generations),
         reply_markup=keyboards.image_packages_list(
             pieces=packages, texts=texts
         )

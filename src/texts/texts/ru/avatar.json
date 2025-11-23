@@ -7,6 +7,7 @@
     "INPUT_MY_NAME_FOR_MODEL": "Взять имя из аккаунта",
     "TO_CREATE_IMAGE_BUTTON": "Создать фото",
     "AVATARS_LIST": "<i>Ваши аватары:</i>",
+    "AVATARS_LIST_WITH_NEW_AVATARS": "\uD83C\uDD95 - Так помечены ненастроенные аватары, нажмите на них и загрузите ваши фото\n\n<i>Ваши аватары:</i>",
     "AVATAR_PAGE": "<b>Аватар:</b> <i>{name}</i>\n<b>Статус:</b>\n<i>{status}</i>",
     "BUY_LEVEL_1_BUTTON": "Купить модель Portrait",
     "SELECT_AVATAR_TO_BUY_PRO": "Выберите нужный вам аватар и затем нажмите \"Купить модель Portrait\"",

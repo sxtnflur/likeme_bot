@@ -155,7 +155,6 @@ async def selected_avatar_for_gen(
     avatars = await AvatarsRepo(db).get_list(filters=dict(user_id=call.from_user.id,
                                                           status='ready',
                                                           level=callback_data.level))
-    avatars = list(map(AvatarSchema.model_validate, avatars))
     if len(avatars) <= 0:
         await call.answer(
             text=texts.generation.YOU_DONT_HAVE_SUCH_AVATARS,

@@ -8,6 +8,19 @@ from .. import models
 class AvatarsRepo(BaseRepo[models.Avatar]):
     model = models.Avatar
 
+    async def get_list(
+        self, filters: dict | None = None, offset: int = 0, limit: int | None = 10
+    ) -> list[AvatarSchema]:
+        stmt = select(self.model).order_by(self.model.status)
+        if filters:
+            stmt = stmt.filter_by(**filters)
+        if offset:
+            stmt = stmt.offset(offset)
+        if limit:
+            stmt = stmt.limit(limit)
+        objs = await self.db.scalars(stmt)
+        return list(map(AvatarSchema.model_validate, objs))
+
     async def get_one(self, **filters) -> models.Avatar | None:
         stmt = (
             select(models.Avatar)

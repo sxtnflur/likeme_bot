@@ -33,6 +33,7 @@ class AvatarTexts(TextsCollectionJson):
     TO_CREATE_IMAGE_BUTTON: str
 
     AVATARS_LIST: str
+    AVATARS_LIST_WITH_NEW_AVATARS: bool
     AVATAR_PAGE: str
     BUY_LEVEL_1_BUTTON: str
 
@@ -41,6 +42,13 @@ class AvatarTexts(TextsCollectionJson):
 
     BUY_AVATAR_BUTTON: str
     CREATE_AVATAR_BUTTON: str
+
+    def avatars_list(self, has_new_avatars: bool):
+        if has_new_avatars:
+            return self.AVATARS_LIST_WITH_NEW_AVATARS
+        else:
+            return self.AVATARS_LIST
+
 
     def on_send_avatar_photo(self, can_take_account_name: bool):
         if can_take_account_name:

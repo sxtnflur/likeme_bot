@@ -1,5 +1,5 @@
 {
-  "BUY_START": "У вас осталось {} генераций\n\nЧтобы купить генерации, нажмите \"Купить генерации\"",
+  "BUY_START": "У вас осталось <b>{}</b> генераций\n\nЗдесь вы можете купить еще:",
   "BUY_IMAGE_GENERATIONS_BUTTON": "Купить генерации",
   "BUY_IMAGE_GENERATIONS": "Купить генерации",
   "BUY_IMAGE_GENERATIONS_CHOOSE_BUTTON": "{} за {}₽",

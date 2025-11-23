@@ -35,7 +35,6 @@ async def pro_avatar_2(
     avatars = await AvatarsRepo(db).get_list(
         filters=dict(user_id=call.from_user.id)
     )
-    avatars = list(map(AvatarSchema.model_validate, avatars))
     if len(avatars) == 0:
         await call.message.answer(texts.avatar.NO_AVATARS)
         await chain_messages[-1].send(

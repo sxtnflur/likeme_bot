@@ -37,7 +37,7 @@ def avatars_list(
             objs=avatars,
             callback_data=AvatarsListCallback,
             get_btn=lambda avatar: InlineKeyboardButton(
-                text=avatar.name or texts.avatar.get_model_level_name(avatar.level),
+                text=avatar.name or ('🆕 ' + texts.avatar.get_model_level_name(avatar.level)),
                 callback_data=SelectAvatarCallback(avatar_id=avatar.id).pack()
             ),
             limit=limit

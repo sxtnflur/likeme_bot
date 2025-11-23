@@ -22,14 +22,9 @@ def image_packages_list(pieces: list[ImageGenerationsBuy], texts: Texts):
         get_btn=lambda piece: InlineKeyboardButton(
             text=texts.payment.generation_buy_choose_button(piece),
             callback_data=SelectImageGenerationsCallback(id=piece.id).pack()
-        )
+        ),
+        width=1
     )
-    kb.append([
-        InlineKeyboardButton(
-            text=texts.base.BACK_BUTTON,
-            callback_data=PaymentStartCallback().pack()
-        )
-    ])
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
 
@@ -41,7 +36,7 @@ def image_package(pay_url: str, texts: Texts):
         )],
         [InlineKeyboardButton(
             text=texts.base.BACK_BUTTON,
-            callback_data=BuyImageGenerationsCallback().pack()
+            callback_data=PaymentStartCallback().pack()
         )]
     ])
 
