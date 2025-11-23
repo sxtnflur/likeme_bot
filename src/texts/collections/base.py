@@ -49,7 +49,6 @@ class AvatarTexts(TextsCollectionJson):
         else:
             return self.AVATARS_LIST
 
-
     def on_send_avatar_photo(self, can_take_account_name: bool):
         if can_take_account_name:
             return self.ON_SEND_AVATAR_PHOTO_IF_CAN_TAKE_ACCOUNT_NAME
@@ -81,7 +80,8 @@ class AvatarTexts(TextsCollectionJson):
     def avatar_page(self, avatar: AvatarSchema) -> str:
         return self.AVATAR_PAGE.format(
             name=avatar.name or '-',
-            status=self.get_model_status(avatar.status)
+            status=self.get_model_status(avatar.status),
+            model=self.get_model_level_name(avatar.level)
         )
 
 

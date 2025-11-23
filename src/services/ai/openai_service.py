@@ -1,3 +1,6 @@
+import aiohttp
+import openai
+import base64
 from pydantic import BaseModel
 from schemas.gpt import GPTResponse, GPTSchemaResponse, TSchema
 from openai import AsyncOpenAI, NOT_GIVEN
@@ -34,7 +37,6 @@ class OpenAIService:
             max_completion_tokens=max_completion_tokens or self.default_max_completition_tokens or NOT_GIVEN,
             **kwargs
         )
-        print(f'{resp=}')
         return resp
 
     async def _send_completition_get_schema(self, messages: list[ChatCompletionMessageParam],
@@ -53,7 +55,6 @@ class OpenAIService:
             max_completion_tokens=max_completion_tokens or self.default_max_completition_tokens or NOT_GIVEN,
             **kwargs
         )
-        print(f'{resp=}')
         return resp
 
     @staticmethod
@@ -159,17 +160,41 @@ class OpenAIService:
     async def send_images_get_schema(
             self,
             schema: type[TSchema],
-            photo_urls: list[str], caption: str | None = None,
-             messages: Iterable[ChatCompletionMessageParam] | None = None,
-             model: str | None = None,
-            **kwargs) -> TSchema:
+            photo_urls: list[str | bytes], caption: str | None = None,
+            messages: Iterable[ChatCompletionMessageParam] | None = None,
+            model: str | None = None,
+            session: aiohttp.ClientSession | None = None,
+            has_tries: int = 1,
+            **kwargs
+    ) -> TSchema:
         msgs = messages or []
         user_content = self.create_images_content(photo_urls, caption)
         msgs.append(self.text_to_user_message(user_content))
-        resp = await self._send_completition_get_schema(
-            schema=schema,
-            messages=msgs,
-            model=model or self.default_model,
-            **kwargs
-        )
+        try:
+            resp = await self._send_completition_get_schema(
+                schema=schema,
+                messages=msgs,
+                model=model or self.default_model,
+                **kwargs
+            )
+        except openai.BadRequestError as e:
+            if e.code == 'invalid_image_url' and session is not None and has_tries > 0:
+                photo_urls_ = []
+                for url in photo_urls:
+                    photo_file = await session.get(url)
+                    photo_urls_.append(
+                        f'data:image/jpeg;base64,'
+                        f'{base64.b64encode(await photo_file.read()).decode("utf-8")}'
+                    )
+
+                return await self.send_images_get_schema(
+                    schema=schema,
+                    photo_urls=photo_urls_,
+                    messages=messages,
+                    model=model,
+                    session=session,
+                    has_tries=has_tries,
+                    **kwargs
+                )
+
         return resp.choices[0].message.parsed

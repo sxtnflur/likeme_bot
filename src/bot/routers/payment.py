@@ -71,28 +71,3 @@ async def select_image_generations(
             pay_url=pay_data.url, texts=texts
         )
     )
-
-
-@router.callback_query(keyboards.callback_datas.BuyModelCallback.filter())
-async def buy_model(
-    call: CallbackQuery, texts: Texts,
-    callback_data: keyboards.callback_datas.BuyModelCallback
-):
-    pay_data = await payment_factory.create_payment(
-        amount=payments_service.model_level_1_price,
-        description='Покупка модели Portrait',
-        test=settings.PAYMENT_TEST,
-        session=call.bot.session._session,
-        metadata={
-            'type': 'model',
-            'model_level': callback_data.level,
-            'avatar_id': callback_data.avatar_id,
-            'user_id': call.from_user.id
-        }
-    )
-    await call.message.answer(
-        texts.payment.buy_model_level_1(price=payments_service.model_level_1_price),
-        reply_markup=keyboards.buy_model_level_1(pay_url=pay_data.url, texts=texts)
-    )
-
-

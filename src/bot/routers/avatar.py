@@ -148,7 +148,7 @@ async def get_name_for_simple_avatar(
     )
 
 
-@router.callback_query(keyboards.callback_datas.InputMyNameForAvatarCallback.filter())
+@router.callback_query(keyboards.callback_datas.InputMyNameForAvatarCallback.filter(F.level == 0))
 @db_connect()
 async def input_my_name_for_avatar(
     call: CallbackQuery, state: FSMContext,
@@ -217,7 +217,7 @@ async def get_photos_to_model(
         else:
             count_photos = len(media_group)
         await m.answer(
-            'Вы отправили только {} фото вместо 10. Пожалуйста, отправьте 10 фото'
+            'Вы отправили только {} фото вместо 10. Пожалуйста, отправьте заново 10 фото одним сообщением'
             .format(count_photos)
         )
         return
@@ -230,12 +230,6 @@ async def get_photos_to_model(
         if not inputed_avatar_id:
             raise NoBoughtAvatarsException
 
-    await avatars_service.start_train_portrait_avatar(
-        file_ids=list(map(lambda x: x.photo[-1].file_id, media_group)),
-        avatar_id=inputed_avatar_id,
-        db=db
-    )
-
     if not await AvatarsRepo(db).exists(user_id=m.from_user.id, name=m.from_user.full_name):
         reply_markup = keyboards.input_avatar_name(texts, level=1)
         text = texts.avatar.ON_SEND_AVATAR_PHOTO_IF_CAN_TAKE_ACCOUNT_NAME
@@ -247,28 +241,64 @@ async def get_photos_to_model(
     await m.answer(
         text=text, reply_markup=reply_markup
     )
-
-    await m.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR_PRO)
+    await state.set_state(CreateModelStates.send_name)
 
 
 @router.message(CreateModelStates.send_name, F.text)
 @db_connect()
-async def get_model_name_portait(m: Message, state: FSMContext, db: AsyncSession):
+async def get_model_name_portait(m: Message, state: FSMContext, db: AsyncSession, texts: Texts):
     data = await state.get_data()
     portrait_file_ids = data.get('portrait_file_ids')
     inputed_avatar_id: int | None = data.get('inputed_avatar_id')
     avatar_name = m.text.strip()
+
+    if await AvatarsRepo(db).exists(user_id=m.from_user.id, name=avatar_name):
+        await m.answer('У вас уже есть аватар с таким названием. Ведите другое название')
+        return
+
     if not inputed_avatar_id:
         inputed_avatar_id = await AvatarsRepo(db).get_one_field(
             field='id', user_id=m.from_user.id, status='added', level=0
         )
         if not inputed_avatar_id:
             raise NoBoughtAvatarsException
-    # await avatars_service.start_train_portrait_avatar(
-    #     file_ids=portrait_file_ids,
-    #     avatar_id=inputed_avatar_id,
-    #     db=db
-    # )
+
+    await m.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR_PRO)
+    await avatars_service.start_train_portrait_avatar(
+        file_ids=portrait_file_ids,
+        user_id=m.from_user.id,
+        avatar_id=inputed_avatar_id,
+        avatar_name=avatar_name,
+        db=db
+    )
+
+
+@router.callback_query(keyboards.callback_datas.InputMyNameForAvatarCallback.filter(F.level == 1))
+@db_connect()
+async def input_my_name_for_portait_avatar(
+    call: CallbackQuery, state: FSMContext,
+    db: AsyncSession, texts: Texts
+):
+    data = await state.get_data()
+    portrait_file_ids = data.get('portrait_file_ids')
+    avatar_name = call.from_user.full_name
+
+    inputed_avatar_id: int | None = data.get('inputed_avatar_id')
+    if not inputed_avatar_id:
+        inputed_avatar_id = await AvatarsRepo(db).get_one_field(
+            field='id', user_id=call.from_user.id, status='added', level=1
+        )
+        if not inputed_avatar_id:
+            raise NoBoughtAvatarsException
+
+    await call.message.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR_PRO)
+    await avatars_service.start_train_portrait_avatar(
+        user_id=call.from_user.id,
+        file_ids=portrait_file_ids,
+        avatar_id=inputed_avatar_id,
+        avatar_name=avatar_name,
+        db=db
+    )
 
 
 @router.callback_query(F.data == 'buy_new_avatar')

@@ -67,12 +67,6 @@ class AvatarsService:
                     status='ready'
                 )
             )
-
-            # await ModelsRepo(db).add(
-            #     avatar_id=for_avatar_id,
-            #     photos=[image_url],
-            #     level=0
-            # )
             await UsersRepo(db).update(
                 filters=dict(id=user_id),
                 updates=dict(current_avatar_id=avatar_id)
@@ -82,6 +76,8 @@ class AvatarsService:
             self,
             file_ids: list[str],
             avatar_id: int,
+            avatar_name: str,
+            user_id: int,
             db: AsyncSession
     ):
         zip_url = await self._prepare_images(file_ids)
@@ -90,12 +86,14 @@ class AvatarsService:
         print(f'{req_id=}')
         await FalRequestsRepo(db).add(
             id=req_id,
+            user_id=user_id,
             data=dict(avatar_id=avatar_id)
         )
         await AvatarsRepo(db).update(
             filters=dict(id=avatar_id),
             updates=dict(
-                status='training'
+                name=avatar_name,
+                status='in_progress'
             )
         )
 
@@ -116,11 +114,12 @@ class AvatarsService:
                 model_data=diffusers_url
             )
         )
+        avatar_name = await AvatarsRepo(db).get_one_field('name', id=avatar_id)
         language = await UsersRepo(db).get_one_field('language', id=fal_req.user_id)
         texts = get_texts(language)
         await self.bot.send_message(
             chat_id=fal_req.user_id,
-            text='Модель успешно обучена. Теперь вы можете создавать фото Portrait',
+            text=f'Модель <b>{avatar_name}</b> успешно обучена. Теперь вы можете создавать фото Portrait',
             reply_markup=keyboards.to_create_image(texts)
         )
 
@@ -131,10 +130,12 @@ class AvatarsService:
         for i, file_id in enumerate(file_ids):
             file = await self.bot.download(file_id)
             file.name = f'{i}.jpg'
-            files.append(file)
+
+            file_content = file.read()
+            file.seek(0)
 
             resp = await self.openai.send_images(
-                photo_urls=[f'data:image/jpeg;base64,{base64.b64encode(file.read()).decode("utf-8")}'],
+                photo_urls=[f'data:image/jpeg;base64,{base64.b64encode(file_content).decode("utf-8")}'],
                 caption=prompts.DESCRIBE_IMAGE_PROMPT,
                 model='gpt-5-mini'
             )
@@ -143,5 +144,8 @@ class AvatarsService:
             descr_file.name = f'{i}.txt'
             descr_file.seek(0)
             files.append(descr_file)
+
+            file.seek(0)
+            files.append(file)
 
         return await upload_zip_by_io(files)

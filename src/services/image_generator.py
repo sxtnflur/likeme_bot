@@ -55,6 +55,18 @@ class ImageGeneratorService:
                 base_exc=e
             )
 
+        wait_msg = None
+        if message.text:
+            wait_msg = await message.edit_text(
+                text=texts.generation.wait_message(prompt, is_private),
+                reply_markup=None
+            )
+        elif message.caption:
+            wait_msg = await message.edit_caption(
+                text=texts.generation.wait_message(prompt, is_private),
+                reply_markup=None
+            )
+
         avatar = await AvatarsRepo(db).get_by_user_current(user_id)
         if not avatar:
             raise SendToUserException(
@@ -93,7 +105,7 @@ class ImageGeneratorService:
                         aspect_ratio=f'{ratio_[0]}:{ratio_[1]}'
                     )
                 elif avatar.level == 1:
-                    if not avatar.model_data['diffusers_url']:
+                    if not avatar.model_data:
                         raise SendToUserException(
                             'Ваша модель невалидна', add_support=True
                         )
@@ -106,24 +118,12 @@ class ImageGeneratorService:
                     else:
                         coro = flux.generate_images(
                             prompt,
-                            lora=avatar.model_data['diffusers_url'],
+                            lora=avatar.model_data,
                             photo_format=ratio.get_wh()
                         )
                 else:
                     raise SendToUserException(
                         texts.generation.UNPREDICTABLE_ERROR
-                    )
-
-                wait_msg = None
-                if message.text:
-                    wait_msg = await message.edit_text(
-                        text=texts.generation.wait_message(prompt, is_private),
-                        reply_markup=None
-                    )
-                elif message.caption:
-                    wait_msg = await message.edit_caption(
-                        text=texts.generation.wait_message(prompt, is_private),
-                        reply_markup=None
                     )
 
                 images = await send_action_while_do_func(
@@ -153,12 +153,15 @@ class ImageGeneratorService:
                     base_exc=e
                 )
 
+            print(1)
+
             file = await session.get(res_image_url_)
             res_image_url = await cdn.save_file_get_url(
                 file=await file.read(),
                 filename=f'{datetime.datetime.utcnow().timestamp().hex()}.jpg',
                 folder=f'/generated_images/{user_id}'
             )
+        print(2)
 
         image_id = await GeneratedImagesRepo(db).add_and_get(
             dict(
@@ -172,9 +175,11 @@ class ImageGeneratorService:
             ),
             get_field='id'
         )
+        print(3)
+        await db.commit()
 
         categories = await self.categories_service.generate_categories_for_image(
-            image_url=res_image_url
+            image_url=res_image_url, session=session
         )
         await GeneratedImagesCategoriesRepo(db).add_all(
             list(map(lambda key: dict(category_key=key,

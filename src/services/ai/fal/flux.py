@@ -52,10 +52,6 @@ async def generate_images(
 
     model = 'fal-ai/flux-lora'
     handler = await fal_client.submit_async(model, arguments=arguments)
-
-    async for event in handler.iter_events():
-        print(event)
-
     result = await handler.get()
     return list(map(lambda image: image['url'], result["images"]))
 
@@ -85,9 +81,5 @@ async def image2image(
 
     model = 'fal-ai/flux-lora/image-to-image'
     handler = await fal_client.submit_async(model, arguments=arguments)
-
-    async for event in handler.iter_events():
-        print(event)
-
     result = await handler.get()
     return list(map(lambda image: image['url'], result["images"]))
