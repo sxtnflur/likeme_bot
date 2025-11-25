@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from schemas.payment import ImageGenerationsBuy
 from texts import Texts
-from . import LoadPhotosToModelCallback
+from . import LoadPhotosToModelCallback, AvatarsListCallback
 from .base import create_list_kb
 from .callback_datas import BuyAvatarCallback, StartFillAddedAvatarCallback
 from .callback_datas.payment import BuyImageGenerationsCallback, PaymentStartCallback, SelectImageGenerationsCallback
@@ -93,5 +93,9 @@ def buy_avatar(
         [InlineKeyboardButton(
             text='Portrait - {} руб'.format(portrait_price),
             callback_data=BuyAvatarCallback(level=1).pack()
+        )],
+        [InlineKeyboardButton(
+            text=texts.base.BACK_BUTTON,
+            callback_data=AvatarsListCallback().pack()
         )]
     ])

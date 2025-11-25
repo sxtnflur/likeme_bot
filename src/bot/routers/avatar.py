@@ -305,7 +305,7 @@ async def input_my_name_for_portait_avatar(
 async def buy_new_avatar(
     call: CallbackQuery, texts: Texts
 ):
-    await call.message.answer(
+    await call.message.edit_text(
         texts.payment.BUY_AVATAR,
         reply_markup=keyboards.buy_avatar(
             texts=texts, simple_price=models.get(0).price, portrait_price=models.get(1).price

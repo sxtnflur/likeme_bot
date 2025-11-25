@@ -88,7 +88,6 @@ class RemixingService:
             chat_id=user_id,
             text=texts.generation.pre_create_image(
                 prompt=image.prompt,
-                has_images=bool(image.prompt_images),
                 chosen_avatar_name=chosen_avatar.name
             ),
             reply_markup=keyboards.pre_generate_image(

@@ -80,10 +80,7 @@ class ImageGeneratorService:
         async with self.storage.start_transaction() as cdn:
             try:
                 if avatar.level == 0:
-                    # if not model.photos:
-                    #     raise Exception('Нет photos')
                     image_urls = [avatar.model_data]
-                    # image_urls = model.photos
                     if prompt_image_file_ids and not prompt_image_urls:
                         for file_id in prompt_image_file_ids:
                             file_ = await self.bot.get_file(file_id)

@@ -59,3 +59,6 @@ class SelectModelCallback(CallbackData, prefix='pregen-select-model'):
 class BackToCreatingImageCallback(CallbackData, prefix='back-to-creating-image'): ...
 class SwitchIsPrivateCreatedImageCallback(CallbackData, prefix='switch-privacy-created-image'):
     image_id: int
+
+
+class EditPromptCallback(CallbackData, prefix='edit-prompt'): ...

@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CopyTextButton, WebAppInfo
 from bot.keyboards.callback_datas.create_image import SelectedAvatarForGenCallback, StartImageGenCallback, \
     SelectIsPrivateCallback, SelectModelCallback, SelectAvatarForGenCallback, BackToCreatingImageCallback, \
-    SelectRatioCallback, SwitchIsPrivateCreatedImageCallback
+    SelectRatioCallback, SwitchIsPrivateCreatedImageCallback, EditPromptCallback
 from config import settings
 from enums.generation import AspectRatio
 from schemas.avatars import AvatarSchema
@@ -43,6 +43,10 @@ def pre_generate_image(
     #     selected_model_level = max(levels)
 
     ikb = [
+        [InlineKeyboardButton(
+            text=texts.generation.EDIT_PROMPT_BUTTON,
+            callback_data=EditPromptCallback().pack()
+        )],
         [InlineKeyboardButton(
             text=texts.generation.is_private_button(is_private=False),
             callback_data=SelectIsPrivateCallback(is_private=False).pack()
@@ -112,3 +116,11 @@ def on_generated_image(image_id: int, is_private: bool, texts: Texts):
             callback_data=SwitchIsPrivateCreatedImageCallback(image_id=image_id).pack()
         )]]
     return InlineKeyboardMarkup(inline_keyboard=ikb)
+
+
+def edit_prompt(texts: Texts):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=texts.base.CHANGED_MIND, callback_data='delete-this-message'
+        )]
+    ])

@@ -19,7 +19,7 @@ class SendToUserException(Exception):
         self.reply_markup = reply_markup
 
         if add_support:
-            self.text += '\n\nПоддержка: @teledeff_support'
+            self.text += '\n\nПоддержка: @RemixMeBotSupport'
 
     def __str__(self):
         text = self.text

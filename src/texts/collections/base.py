@@ -11,6 +11,8 @@ from typing_extensions import Literal
 
 
 class BaseTexts(TextsCollectionJson):
+    GOT_IT: str
+    CHANGED_MIND: str
     BACK_BUTTON: str
     START_MESSAGE: str
     FIRST_MESSAGE: str
@@ -115,25 +117,23 @@ class GenerationTexts(TextsCollectionJson):
     SWITCH_IS_PRIVATE_BUTTON_PRIVATE: str
     SWITCH_IS_PRIVATE_BUTTON_PUBLIC: str
 
+    EDIT_PROMPT_BUTTON: str
+    EDIT_PROMPT: str
+    UNPREDICTABLE_PROMPT_TYPE: str
+
+    def edit_prompt(self, prompt: str):
+        return self.EDIT_PROMPT.format(prompt=prompt)
 
     def selected_avatar_button(self, avatar_name: str):
         return self.SELECTED_AVATAR_BUTTON.format(avatar_name)
 
     def pre_create_image(
         self, prompt: str,
-        has_images: bool,
         chosen_avatar_name: str
     ):
-        # Промпт: {}
-        # Фото: {}
-        #
-        # Можешь присылать фото или промпт для генерации
-        # или жми Генерировать
-
-        has_prompt_text = textwrap.shorten(text=prompt, width=50, placeholder='...')
-        has_images_text = '✅' if has_images else '...'
+        prompt = textwrap.shorten(text=prompt, width=50, placeholder='...')
         return self.PRE_CREATE_IMAGE.format(
-            has_prompt_text, has_images_text, chosen_avatar_name
+            prompt, chosen_avatar_name
         )
 
     def is_private_button(self, is_private: bool) -> str:
@@ -166,8 +166,7 @@ class GenerationTexts(TextsCollectionJson):
             ).format(webapp_post_url, webapp_post_url, remix_url, remix_url)
         else:
             return (
-                'Делись своей <a href="{}">генерацией</a> с друзьями: <code>{}</code>\n\n'
-                'И может поискать свой пост в <a href="{}">ленте</a>'
+                'Делись своей <a href="{}">генерацией</a> с друзьями: <code>{}</code>'
             ).format(webapp_post_url, webapp_post_url, settings.WEBAPP_DIRECT_URL)
 
     def get_text_btn_ratio(self, ratio: AspectRatio) -> str:

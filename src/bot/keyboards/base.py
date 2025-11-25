@@ -89,3 +89,11 @@ def main_menu(
          KeyboardButton(text=texts.main_menu_buttons.SUPPORT)]
     ],
         resize_keyboard=True)
+
+
+def got_it(texts: Texts):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=texts.base.GOT_IT, callback_data='delete-this-message'
+        )]
+    ])

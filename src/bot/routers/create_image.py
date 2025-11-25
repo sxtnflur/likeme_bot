@@ -3,8 +3,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
 from bot import keyboards
 from bot.middlewares.media_group import MediaMiddleware
+from bot.utils.delete_msgs import save_msgs_to_delete, delete_saved_msgs
 from config import settings
-from database import db_connect, UsersRepo, AvatarsRepo
+from database import db_connect, UsersRepo, AvatarsRepo, GeneratedImagesRepo
 from depends import image_generator_service, remixing_service
 from enums.generation import AspectRatio
 from schemas.avatars import AvatarSchema
@@ -13,7 +14,6 @@ from texts.base import get_main_menu_button, Texts
 from bot.states.create_image import CreateImageStates
 
 router = Router()
-router.message.middleware(MediaMiddleware(latency=5))
 
 
 @router.message(F.text.in_(get_main_menu_button('CREATE_IMAGE')))
@@ -44,32 +44,32 @@ async def get_prompt(
         m: Message,
         state: FSMContext,
         texts: Texts,
-        db: AsyncSession,
-        media_group: list[Message] = None
+        db: AsyncSession
 ):
-    get_file_id = lambda x: x.photo[-1].file_id
+    # get_file_id = lambda x: x.photo[-1].file_id
 
-    if m.media_group_id:
-        if media_group[0].caption:
-            prompt = media_group[0].caption
-        else:
-            prompt = await state.get_value('create_image_prompt')
-        file_ids = list(map(get_file_id, media_group))
-        await state.update_data(create_image_file_ids=file_ids,
-                                create_image_prompt=prompt)
-    elif m.photo:
-        if m.caption:
-            prompt = m.caption
-        else:
-            prompt = await state.get_value('create_image_prompt')
-        file_ids = [get_file_id(m)]
-        await state.update_data(create_image_file_ids=file_ids,
-                                create_image_prompt=prompt)
-    elif m.text:
+    # if m.media_group_id:
+    #     if media_group[0].caption:
+    #         prompt = media_group[0].caption
+    #     else:
+    #         prompt = await state.get_value('create_image_prompt')
+    #     file_ids = list(map(get_file_id, media_group))
+    #     await state.update_data(create_image_file_ids=file_ids,
+    #                             create_image_prompt=prompt)
+    # elif m.photo:
+    #     if m.caption:
+    #         prompt = m.caption
+    #     else:
+    #         prompt = await state.get_value('create_image_prompt')
+    #     file_ids = [get_file_id(m)]
+    #     await state.update_data(create_image_file_ids=file_ids,
+    #                             create_image_prompt=prompt)
+    if m.text:
         prompt = m.text.strip()
         await state.update_data(create_image_prompt=prompt)
         file_ids = await state.get_value('create_image_file_ids')
     else:
+        await m.answer(texts.generation.UNPREDICTABLE_PROMPT_TYPE)
         return
 
     chosen_avatar = await state.get_value('create_image_chosen_avatar')
@@ -81,7 +81,6 @@ async def get_prompt(
 
     await m.answer(
         texts.generation.pre_create_image(prompt=prompt,
-                                          has_images=bool(file_ids),
                                           chosen_avatar_name=chosen_avatar.name),
         reply_markup=keyboards.pre_generate_image(
             has_prompt=bool(prompt), has_images=bool(file_ids),
@@ -182,7 +181,6 @@ async def select_avatar_for_gen(
         db: AsyncSession,
         texts: Texts
 ):
-
     try:
         chosen_avatar = await AvatarsRepo(db).get_one(id=callback_data.avatar_id)
         await UsersRepo(db).update(
@@ -224,7 +222,6 @@ async def back_to_creating_image(
 
     await call.message.edit_text(
         texts.generation.pre_create_image(prompt=prompt,
-                                          has_images=bool(file_ids),
                                           chosen_avatar_name=chosen_avatar.name),
         reply_markup=keyboards.pre_generate_image(
             has_prompt=bool(prompt), has_images=bool(file_ids),
@@ -335,3 +332,57 @@ async def switch_is_private_for_created_image(
         ),
         disable_web_page_preview=True
     )
+
+
+@router.callback_query(keyboards.callback_datas.EditPromptCallback.filter())
+async def show_prompt(call: CallbackQuery, state: FSMContext, texts: Texts):
+    await call.answer()
+    prompt = await state.get_value('create_image_prompt')
+    msg = await call.message.answer(
+        texts.generation.edit_prompt(prompt),
+        reply_markup=keyboards.edit_prompt(texts)
+    )
+    await state.set_state(CreateImageStates.update_prompt)
+    await save_msgs_to_delete(state, msg_id=[call.message.message_id, msg.message_id])
+
+
+@router.message(CreateImageStates.update_prompt)
+@db_connect()
+async def update_prompt(m: Message, state: FSMContext, db: AsyncSession, texts: Texts):
+    if not m.text:
+        msg = await m.answer(texts.generation.UNPREDICTABLE_PROMPT_TYPE,
+                             reply_markup=keyboards.got_it(texts))
+        await m.delete()
+        await save_msgs_to_delete(state, msg_id=msg.message_id)
+        return
+
+    await state.update_data(create_image_prompt=m.text.strip())
+
+    try:
+        await delete_saved_msgs(state, bot=m.bot, chat_id=m.chat.id)
+    except:
+        pass
+
+    data = await state.get_data()
+    prompt = data.get('create_image_prompt')
+    file_ids = data.get('create_image_file_ids')
+    chosen_avatar = data.get('create_image_chosen_avatar')
+    ratio = data.get('create_image_ratio')
+
+    if not chosen_avatar:
+        chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=m.from_user.id)
+        await state.update_data(create_image_chosen_avatar=chosen_avatar.model_dump())
+    else:
+        chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
+
+    await m.answer(
+        texts.generation.pre_create_image(prompt=prompt,
+                                          chosen_avatar_name=chosen_avatar.name),
+        reply_markup=keyboards.pre_generate_image(
+            has_prompt=bool(prompt), has_images=bool(file_ids),
+            chosen_avatar=chosen_avatar,
+            texts=texts,
+            selected_ratio=AspectRatio(ratio) if ratio else AspectRatio.default()
+        )
+    )
+    await state.set_state(None)

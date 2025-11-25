@@ -55,7 +55,13 @@ async def start(
                 reply_markup=keyboards.main_menu(texts)
             )
         else:
-            await chain_messages[0].send(chat_id=m.from_user.id, state=state, texts=texts)
+            user_has_in_progress_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id, status='in_progress')
+            if user_has_in_progress_avatar:
+                await m.answer(
+                    text=texts.avatar.WAIT_MSG_CREATE_AVATAR
+                )
+            else:
+                await chain_messages[-1].send(chat_id=m.from_user.id, state=state, texts=texts)
 
 
 @router.message(F.text.in_(get_main_menu_button('FEED')))
