@@ -183,15 +183,15 @@ class ImageGeneratorService:
             list(map(lambda key: dict(category_key=key,
                                       image_id=image_id), categories))
         )
-
+        webapp_post_url = settings.WEBAPP_DIRECT_URL + f'?startapp=post_{image_id}'
         await self.bot.send_message(
             chat_id=user_id,
             text=texts.generation.after_image_generated(
-                is_private=is_private,
-                webapp_post_url=settings.WEBAPP_DIRECT_URL + f'?startapp=post_{image_id}',
-                remix_url=self.remixing_service.create_start_link(image_id),
+                is_private=is_private
             ),
-            reply_markup=keyboards.on_generated_image(image_id, is_private, texts),
+            reply_markup=keyboards.on_generated_image(image_id, is_private,
+                                                      link=webapp_post_url,
+                                                      texts=texts),
             disable_web_page_preview=True
         )
 

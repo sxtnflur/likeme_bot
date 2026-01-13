@@ -324,15 +324,15 @@ async def switch_is_private_for_created_image(
     is_private = await image_generator_service.switch_is_private_for_generated_image(
         callback_data.image_id, db=db
     )
+    webapp_post_url = settings.WEBAPP_DIRECT_URL + f'?startapp=post_{callback_data.image_id}'
     await call.message.edit_text(
         text=texts.generation.after_image_generated(
-            is_private=is_private,
-            webapp_post_url=settings.WEBAPP_DIRECT_URL + f'?startapp=post_{callback_data.image_id}',
-            remix_url=remixing_service.create_start_link(callback_data.image_id)
+            is_private=is_private
         ),
         reply_markup=keyboards.on_generated_image(
             image_id=callback_data.image_id,
             is_private=is_private,
+            link=webapp_post_url,
             texts=texts
         ),
         disable_web_page_preview=True

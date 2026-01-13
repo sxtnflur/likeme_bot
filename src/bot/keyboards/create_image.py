@@ -28,12 +28,12 @@ def to_create_image(texts: Texts):
 
 
 def pre_generate_image(
-    has_prompt: bool,
-    has_images: bool,
-    chosen_avatar: AvatarSchema,
-    texts: Texts,
-    selected_ratio: AspectRatio = AspectRatio.default(),
-    is_private: bool = False,
+        has_prompt: bool,
+        has_images: bool,
+        chosen_avatar: AvatarSchema,
+        texts: Texts,
+        selected_ratio: AspectRatio = AspectRatio.default(),
+        is_private: bool = False,
 ):
     # models = list(filter(lambda x: x.status == 'ready', chosen_avatar.models))
     # levels = list(map(lambda x: x.level, models))
@@ -111,8 +111,17 @@ def select_avatar_for_gen(avatars: list[AvatarSchema], texts: Texts,
     return InlineKeyboardMarkup(inline_keyboard=ikb)
 
 
-def on_generated_image(image_id: int, is_private: bool, texts: Texts):
-    ikb = [[InlineKeyboardButton(
+def on_generated_image(image_id: int, is_private: bool,
+                       link: str, texts: Texts):
+    ikb = [
+        [InlineKeyboardButton(
+            text='Поделиться в Telegram',
+            url=f'https://t.me/share/url?url={link}&text=Зацени мой новый образ'
+        ),
+            InlineKeyboardButton(
+                text='Скопировать ссылку', copy_text=CopyTextButton(text=link)
+            )],
+        [InlineKeyboardButton(
             text=texts.generation.switch_is_private_button(is_private),
             callback_data=SwitchIsPrivateCreatedImageCallback(image_id=image_id).pack()
         )]]

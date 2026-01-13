@@ -128,8 +128,8 @@ class GenerationTexts(TextsCollectionJson):
         return self.SELECTED_AVATAR_BUTTON.format(avatar_name)
 
     def pre_create_image(
-        self, prompt: str,
-        chosen_avatar_name: str
+            self, prompt: str,
+            chosen_avatar_name: str
     ):
         prompt = textwrap.shorten(text=prompt, width=50, placeholder='...')
         return self.PRE_CREATE_IMAGE.format(
@@ -153,21 +153,16 @@ class GenerationTexts(TextsCollectionJson):
             privacy=self.is_private_button(is_private)
         )
 
-    def after_image_generated(self, is_private: bool, webapp_post_url: str, remix_url: str):
+    def after_image_generated(self, is_private: bool):
         if is_private:
             return (
-                'Твоя генерация в <b>приватном режиме</b> 🔒, ее никто не увидит, если ты сам этого не '
-                'захочешь\n\n'
-                'Но ты все равно можешь отправить эту <a href="{}">ссылку</a> на свою генерацию '
-                'друзьям:\n<code>{}</code>\n\n'
-                'По ней они смогут поставить <b>лайк</b>, <b>поделиться</b> и <b>повторить твой промпт</b> на себе\n\n'
-                'Если ты хочешь только дать возможность посмотреть фото и повторить промпт, '
-                'тебе нужна вот эта <a href="{}">ссылка</a>: <code>{}</code>'
-            ).format(webapp_post_url, webapp_post_url, remix_url, remix_url)
+                '''<b>Твоя генерация скрыта из ленты 🔒</b>
+Эту настройку можно изменить позже
+
+<i>Поделись с друзьями картинкой с помощью кнопок ниже</i>'''
+            )
         else:
-            return (
-                'Делись своей <a href="{}">генерацией</a> с друзьями: <code>{}</code>'
-            ).format(webapp_post_url, webapp_post_url, settings.WEBAPP_DIRECT_URL)
+            return '<i>Поделись с друзьями картинкой с помощью кнопок ниже</i>'
 
     def get_text_btn_ratio(self, ratio: AspectRatio) -> str:
         names = {
