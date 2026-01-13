@@ -71,7 +71,8 @@ class RemixingService:
             create_image_prompt_image_urls=image.prompt_images
         )
 
-        chosen_avatar = await state.get_value('create_image_chosen_avatar')
+        data = await state.get_data()
+        chosen_avatar = data.get('create_image_chosen_avatar')
         if not chosen_avatar:
             chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=user_id)
             chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
@@ -95,6 +96,7 @@ class RemixingService:
                 has_images=bool(image.prompt_images),
                 chosen_avatar=chosen_avatar,
                 texts=texts,
-                selected_ratio=AspectRatio(image.ratio) if image.ratio else AspectRatio.default()
+                selected_ratio=AspectRatio(image.ratio) if image.ratio else AspectRatio.default(),
+                is_private=False
             )
         )

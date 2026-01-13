@@ -64,15 +64,16 @@ async def get_prompt(
     #     file_ids = [get_file_id(m)]
     #     await state.update_data(create_image_file_ids=file_ids,
     #                             create_image_prompt=prompt)
+    data = await state.get_data()
     if m.text:
         prompt = m.text.strip()
         await state.update_data(create_image_prompt=prompt)
-        file_ids = await state.get_value('create_image_file_ids')
+        file_ids = data.get('create_image_file_ids')
     else:
         await m.answer(texts.generation.UNPREDICTABLE_PROMPT_TYPE)
         return
 
-    chosen_avatar = await state.get_value('create_image_chosen_avatar')
+    chosen_avatar = await data.get('create_image_chosen_avatar')
     if not chosen_avatar:
         chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=m.from_user.id)
         await state.update_data(create_image_chosen_avatar=chosen_avatar.model_dump())
@@ -85,14 +86,16 @@ async def get_prompt(
         reply_markup=keyboards.pre_generate_image(
             has_prompt=bool(prompt), has_images=bool(file_ids),
             chosen_avatar=chosen_avatar,
-            texts=texts
+            texts=texts,
+            is_private=data.get('is_private', False)
         )
     )
 
 
 @router.callback_query(keyboards.callback_datas.SelectIsPrivateCallback.filter())
-async def select_is_private(call: CallbackQuery, texts: Texts):
+async def select_is_private(call: CallbackQuery, texts: Texts, state: FSMContext):
     new_ikb = []
+    is_private = False
     for row in call.message.reply_markup.inline_keyboard:
         new_row = []
         for btn in row:
@@ -104,6 +107,7 @@ async def select_is_private(call: CallbackQuery, texts: Texts):
             new_row.append(btn)
         new_ikb.append(new_row)
 
+    await state.update_data(is_private=is_private)
     await call.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_ikb))
 
 
@@ -227,7 +231,8 @@ async def back_to_creating_image(
             has_prompt=bool(prompt), has_images=bool(file_ids),
             chosen_avatar=chosen_avatar,
             texts=texts,
-            selected_ratio=AspectRatio(ratio) if ratio else AspectRatio.default()
+            selected_ratio=AspectRatio(ratio) if ratio else AspectRatio.default(),
+            is_private=data.get('is_private', False)
         )
     )
 
@@ -382,7 +387,8 @@ async def update_prompt(m: Message, state: FSMContext, db: AsyncSession, texts: 
             has_prompt=bool(prompt), has_images=bool(file_ids),
             chosen_avatar=chosen_avatar,
             texts=texts,
-            selected_ratio=AspectRatio(ratio) if ratio else AspectRatio.default()
+            selected_ratio=AspectRatio(ratio) if ratio else AspectRatio.default(),
+            is_private=data.get('is_private', False)
         )
     )
     await state.set_state(None)

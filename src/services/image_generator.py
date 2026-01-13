@@ -106,7 +106,8 @@ class ImageGeneratorService:
                         raise SendToUserException(
                             'Ваша модель невалидна', add_support=True
                         )
-                    prompt = await self.translation_service.translate_ru_to_en(prompt)
+                    prompt_ = await self.translation_service.translate_ru_to_en(prompt)
+                    print(f'{prompt_=}')
 
                     if prompt_image_file_ids or prompt_image_urls:
                         raise SendToUserException(
@@ -114,7 +115,7 @@ class ImageGeneratorService:
                         )
                     else:
                         coro = flux.generate_images(
-                            prompt,
+                            prompt_,
                             lora=avatar.model_data,
                             photo_format=ratio.get_wh()
                         )

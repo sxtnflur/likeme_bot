@@ -5,7 +5,7 @@ from pydantic.v1 import BaseSettings
 
 
 class Settings(BaseSettings):
-    BASE_DIR: str = ''
+    BASE_DIR: str = os.getcwd()
 
     DATABASE_URL: str
     TRAIN_CALLBACK_URL: str = ''
@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     WEBAPP_DIRECT_URL: str
 
     REDIS_URL: str
+
+    TRIGGER_WORD: str = 'fksr3O1nBH'
 
 
 def get_env_path():

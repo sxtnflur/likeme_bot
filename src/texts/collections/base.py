@@ -203,6 +203,7 @@ class PaymentTexts(TextsCollectionJson):
     SELECT_PACKAGE: str
 
     PAY_BUTTON: str
+    PROMOCODE_BUTTON: str
     ON_SUCCESS_PAYMENT: str
     ON_SUCCESS_PAYMENT_PACKAGE: str
 

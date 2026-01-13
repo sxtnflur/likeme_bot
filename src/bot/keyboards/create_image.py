@@ -32,7 +32,8 @@ def pre_generate_image(
     has_images: bool,
     chosen_avatar: AvatarSchema,
     texts: Texts,
-    selected_ratio: AspectRatio = AspectRatio.default()
+    selected_ratio: AspectRatio = AspectRatio.default(),
+    is_private: bool = False,
 ):
     # models = list(filter(lambda x: x.status == 'ready', chosen_avatar.models))
     # levels = list(map(lambda x: x.level, models))
@@ -48,8 +49,8 @@ def pre_generate_image(
             callback_data=EditPromptCallback().pack()
         )],
         [InlineKeyboardButton(
-            text=texts.generation.is_private_button(is_private=False),
-            callback_data=SelectIsPrivateCallback(is_private=False).pack()
+            text=texts.generation.is_private_button(is_private=is_private),
+            callback_data=SelectIsPrivateCallback(is_private=is_private).pack()
         )],
         [InlineKeyboardButton(
             text=texts.generation.selected_avatar_button(chosen_avatar.name),

@@ -140,7 +140,7 @@ class AvatarsService:
                 model='gpt-5-mini'
             )
             descr_file = io.BytesIO()
-            descr_file.write(resp.text_answer.encode('utf-8'))
+            descr_file.write(('[trigger] ' + resp.text_answer).encode('utf-8'))
             descr_file.name = f'{i}.txt'
             descr_file.seek(0)
             files.append(descr_file)

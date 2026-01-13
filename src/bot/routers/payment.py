@@ -6,6 +6,7 @@ from bot.keyboards import PaymentStartCallback
 from config import settings
 from database import db_connect, UsersRepo
 from depends import payment_factory, payments_service
+from enums.payments import PaymentTypeEnum
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts.base import get_main_menu_button, Texts
 
@@ -67,7 +68,9 @@ async def select_image_generations(
     )
     await call.message.edit_text(
         texts.payment.select_package(package),
-        reply_markup=keyboards.image_package(
-            pay_url=pay_data.url, texts=texts
+        reply_markup=keyboards.pay_url_kb(
+            pay_url=pay_data.url, texts=texts,
+            back_callback_data=PaymentStartCallback().pack(),
+            payment_type=PaymentTypeEnum.generations
         )
     )

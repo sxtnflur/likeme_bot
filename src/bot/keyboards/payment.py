@@ -1,10 +1,12 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from enums.payments import PaymentTypeEnum
 from schemas.payment import ImageGenerationsBuy
 from texts import Texts
 from . import LoadPhotosToModelCallback, AvatarsListCallback
 from .base import create_list_kb
 from .callback_datas import BuyAvatarCallback, StartFillAddedAvatarCallback
-from .callback_datas.payment import BuyImageGenerationsCallback, PaymentStartCallback, SelectImageGenerationsCallback
+from .callback_datas.payment import BuyImageGenerationsCallback, PaymentStartCallback, SelectImageGenerationsCallback, \
+    PromocodeCallback
 
 
 def start_buy(texts: Texts):
@@ -28,24 +30,19 @@ def image_packages_list(pieces: list[ImageGenerationsBuy], texts: Texts):
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
 
-def image_package(pay_url: str, texts: Texts):
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(
-            text=texts.payment.PAY_BUTTON,
-            url=pay_url
-        )],
-        [InlineKeyboardButton(
-            text=texts.base.BACK_BUTTON,
-            callback_data=PaymentStartCallback().pack()
-        )]
-    ])
-
-
-def pay_url_kb(pay_url: str, texts: Texts, back_callback_data: str | None = None):
+def pay_url_kb(pay_url: str, texts: Texts,
+               payment_type: PaymentTypeEnum = PaymentTypeEnum.any,
+               back_callback_data: str | None = None):
     ikb = [[InlineKeyboardButton(
-            text=texts.payment.PAY_BUTTON,
-            url=pay_url
-        )]]
+        text=texts.payment.PAY_BUTTON,
+        url=pay_url
+    )],
+        InlineKeyboardButton(
+            text=texts.payment.PROMOCODE_BUTTON,
+            callback_data=PromocodeCallback(payment_type=payment_type).pack()
+        )
+    ]
+
     if back_callback_data:
         ikb.append([
             InlineKeyboardButton(
@@ -59,9 +56,9 @@ def pay_url_kb(pay_url: str, texts: Texts, back_callback_data: str | None = None
 def on_success_payment_model(model_id: int, texts: Texts, level: int = 1):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
-                    text='Загрузить мои фото в Portrait',
-                    callback_data=LoadPhotosToModelCallback(model_id=model_id).pack()
-                )]
+            text='Загрузить мои фото в Portrait',
+            callback_data=LoadPhotosToModelCallback(model_id=model_id).pack()
+        )]
     ])
 
 
@@ -83,7 +80,7 @@ def to_buy_avatar(texts: Texts):
 
 
 def buy_avatar(
-    texts: Texts, simple_price: int, portrait_price: int
+        texts: Texts, simple_price: int, portrait_price: int
 ):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(

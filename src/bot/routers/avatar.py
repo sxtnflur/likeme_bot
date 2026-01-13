@@ -9,6 +9,7 @@ from bot.routers.start_messages_chain import chain_messages
 from bot.states import NanobananaAvatarStates, CreateModelStates
 from database import AvatarsRepo, db_connect, UsersRepo
 from depends import avatars_service, payment_factory, payments_service
+from enums.payments import PaymentTypeEnum
 from schemas.avatars import AvatarSchema
 from services.payment import models
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -334,7 +335,8 @@ async def buy_avatar_select_model(
         'Оплата',
         reply_markup=keyboards.pay_url_kb(
             pay_url=pay_data.url, texts=texts,
-            back_callback_data='buy_new_avatar'
+            back_callback_data='buy_new_avatar',
+            payment_type=PaymentTypeEnum.avatar
         )
     )
 
