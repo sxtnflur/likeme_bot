@@ -335,8 +335,7 @@ async def buy_avatar_select_model(
         'Оплата',
         reply_markup=keyboards.pay_url_kb(
             pay_url=pay_data.url, texts=texts,
-            back_callback_data='buy_new_avatar',
-            payment_type=PaymentTypeEnum.avatar
+            back_callback_data='buy_new_avatar'
         )
     )
 

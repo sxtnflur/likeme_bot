@@ -7,6 +7,7 @@ class BuyImageGenerationsCallback(CallbackData, prefix='buy-image-gens'): ...
 
 class SelectImageGenerationsCallback(CallbackData, prefix='select-image-package'):
     id: int
+    save_msg: bool = False
 
 
 class BuyModelCallback(CallbackData, prefix='buy-model'):
@@ -14,5 +15,4 @@ class BuyModelCallback(CallbackData, prefix='buy-model'):
     level: int = 1
 
 
-class PromocodeCallback(CallbackData, prefix='promocode'):
-    type: int
+class PromocodeCallback(CallbackData, prefix='promocode'): ...

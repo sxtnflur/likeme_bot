@@ -66,11 +66,19 @@ async def select_image_generations(
             'user_id': call.from_user.id
         }
     )
-    await call.message.edit_text(
-        texts.payment.select_package(package),
-        reply_markup=keyboards.pay_url_kb(
-            pay_url=pay_data.url, texts=texts,
-            back_callback_data=PaymentStartCallback().pack(),
-            payment_type=PaymentTypeEnum.generations
+    if callback_data.save_msg:
+        await call.message.answer(
+            texts.payment.select_package(package),
+            reply_markup=keyboards.pay_url_kb(
+                pay_url=pay_data.url, texts=texts,
+                back_callback_data=PaymentStartCallback().pack()
+            )
         )
-    )
+    else:
+        await call.message.edit_text(
+            texts.payment.select_package(package),
+            reply_markup=keyboards.pay_url_kb(
+                pay_url=pay_data.url, texts=texts,
+                back_callback_data=PaymentStartCallback().pack()
+            )
+        )

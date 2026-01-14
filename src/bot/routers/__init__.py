@@ -5,11 +5,12 @@ from .create_image import router as create_img_router
 from .payment import router as pay_router
 from .pro_avatar import router as pro_avatar_router
 from .unhandled import router as unhandled_router
+from .promocodes import router as promocodes_router
 
 
 __routers__ = (
     start_router, chain_router, avatar_router, create_img_router, pay_router,
-    pro_avatar_router,
+    pro_avatar_router, promocodes_router,
 
     unhandled_router
 )

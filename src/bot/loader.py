@@ -7,7 +7,7 @@ from redis.asyncio import Redis
 
 bot = Bot(token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 storage = RedisStorage(redis=Redis.from_url(settings.REDIS_URL))
-dp = Dispatcher(storage=storage)
+dp = Dispatcher()
 
 
 async def onstartup(bot: Bot) -> None:

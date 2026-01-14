@@ -18,12 +18,14 @@ def start_buy(texts: Texts):
     ])
 
 
-def image_packages_list(pieces: list[ImageGenerationsBuy], texts: Texts):
+def image_packages_list(pieces: list[ImageGenerationsBuy], texts: Texts,
+                        save_msg: bool = False):
     kb = create_list_kb(
         objs=pieces,
         get_btn=lambda piece: InlineKeyboardButton(
             text=texts.payment.generation_buy_choose_button(piece),
-            callback_data=SelectImageGenerationsCallback(id=piece.id).pack()
+            callback_data=SelectImageGenerationsCallback(id=piece.id,
+                                                         save_msg=save_msg).pack()
         ),
         width=1
     )
@@ -31,16 +33,15 @@ def image_packages_list(pieces: list[ImageGenerationsBuy], texts: Texts):
 
 
 def pay_url_kb(pay_url: str, texts: Texts,
-               payment_type: PaymentTypeEnum = PaymentTypeEnum.any,
                back_callback_data: str | None = None):
     ikb = [[InlineKeyboardButton(
         text=texts.payment.PAY_BUTTON,
         url=pay_url
     )],
-        InlineKeyboardButton(
-            text=texts.payment.PROMOCODE_BUTTON,
-            callback_data=PromocodeCallback(payment_type=payment_type).pack()
-        )
+        # [InlineKeyboardButton(
+        #     text=texts.payment.PROMOCODE_BUTTON,
+        #     callback_data=PromocodeCallback().pack()
+        # )]
     ]
 
     if back_callback_data:
@@ -96,3 +97,54 @@ def buy_avatar(
             callback_data=AvatarsListCallback().pack()
         )]
     ])
+
+
+def buy_by_promocode(
+    texts: Texts,
+    type: PaymentTypeEnum,
+    sale: int,
+    *,
+    simple_price: int,
+    portrait_price: int,
+    generations: list[ImageGenerationsBuy]
+):
+    def count_price(price: int):
+        return round(price * (1 - sale / 100))
+
+    for g in generations:
+        g.price = count_price(g.price)
+
+    btns = {
+        'simple-avatar': InlineKeyboardButton(
+            text='Аватар Simple ({} руб)'.format(count_price(simple_price)),
+            callback_data=BuyAvatarCallback(level=0).pack()
+        ),
+        'portrait-avatar': InlineKeyboardButton(
+            text='Аватар Portrait ({} руб)'.format(count_price(portrait_price)),
+            callback_data=BuyAvatarCallback(level=1).pack()
+        ),
+        'generations': image_packages_list(generations, texts, save_msg=True).inline_keyboard
+    }
+
+    ikb: list[list[InlineKeyboardButton]] | None = None
+    if type == PaymentTypeEnum.any:
+        ikb = (
+            [[btns['simple-avatar'], btns['portrait-avatar']],
+             *btns['generations']]
+        )
+    elif type == PaymentTypeEnum.generations:
+        ikb = (btns['generations'])
+    elif type == PaymentTypeEnum.avatar:
+        ikb = ([
+            [btns['simple-avatar']],
+            [btns['portrait-avatar']]
+        ])
+    elif type == PaymentTypeEnum.avatar_simple:
+        ikb = [
+            [btns['simple-avatar']]
+        ]
+    elif type == PaymentTypeEnum.avatar_portrait:
+        ikb = [[btns['portrait-avatar']]]
+    if ikb is not None:
+        print(f'{ikb=}')
+        return InlineKeyboardMarkup(inline_keyboard=ikb)
