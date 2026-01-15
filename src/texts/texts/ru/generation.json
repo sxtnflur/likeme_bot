@@ -20,6 +20,6 @@
   "MODEL": "Модель:",
   "SHOWN_AVATARS_WITH_MODEL": "Показаны аватары с моделью:",
   "EDIT_PROMPT_BUTTON": "✏ Изменить промпт / Показать полностью",
-  "EDIT_PROMPT": "<code>{prompt}</code>\n\n<i>Отправьте новый промпт, чтобы заменить текущий:</i>",
+  "EDIT_PROMPT": "<blockquote expanded=true><code>{prompt}</code></blockquote>\n\n<i>Отправьте новый промпт, чтобы заменить текущий:</i>",
   "UNPREDICTABLE_PROMPT_TYPE": "Вы можете отправить в качестве промпта только текст"
 }

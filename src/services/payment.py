@@ -80,15 +80,19 @@ class PaymentService:
             level=model_level,
             db=db
         )
+        gens_by_model_level = {
+            0: 3, 1: 7
+        }
+        await UsersRepo(db).increase_field(
+            filters=dict(id=user_id),
+            field='image_generations',
+            value=gens_by_model_level.get(model_level, 0)
+        )
         await PaymentsRepo(db).add(
             user_id=user_id,
             amount=amount,
             type='avatar'
         )
-        # await UsersRepo(db).update(
-        #     filters=dict(id=user_id),
-        #     updates=dict(can_create_avatar_level=model_level)
-        # )
         language = await UsersRepo(db).get_one_field('language', id=user_id)
         texts = get_texts(language)
         await self.bot.send_message(

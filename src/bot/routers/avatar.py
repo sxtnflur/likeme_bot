@@ -1,12 +1,13 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from bot import keyboards
 from bot.exceptions import SendToUserException, NoBoughtAvatarsException
 from bot.keyboards import BuyAvatarCallback, StartFillAddedAvatarCallback
 from bot.middlewares.media_group import MediaMiddleware
 from bot.routers.start_messages_chain import chain_messages
 from bot.states import NanobananaAvatarStates, CreateModelStates
+from config import settings
 from database import AvatarsRepo, db_connect, UsersRepo
 from depends import avatars_service, payment_factory, payments_service
 from enums.payments import PaymentTypeEnum
@@ -54,15 +55,28 @@ async def avatars_list(
         offset=callback_data.page * callback_data.limit,
         limit=callback_data.limit
     )
-    await call.message.edit_text(
-        texts.avatar.avatars_list(has_new_avatars=any([1 for i in avatars if i.status != 'ready'])),
-        reply_markup=keyboards.avatars_list(
-            texts=texts,
-            avatars=list(map(AvatarSchema.model_validate, avatars)),
-            page=callback_data.page,
-            limit=callback_data.limit
+
+    if call.message.photo:
+        await call.message.delete()
+        await call.message.answer(
+            texts.avatar.avatars_list(has_new_avatars=any([1 for i in avatars if i.status != 'ready'])),
+            reply_markup=keyboards.avatars_list(
+                texts=texts,
+                avatars=list(map(AvatarSchema.model_validate, avatars)),
+                page=callback_data.page,
+                limit=callback_data.limit
+            )
         )
-    )
+    else:
+        await call.message.edit_text(
+            texts.avatar.avatars_list(has_new_avatars=any([1 for i in avatars if i.status != 'ready'])),
+            reply_markup=keyboards.avatars_list(
+                texts=texts,
+                avatars=list(map(AvatarSchema.model_validate, avatars)),
+                page=callback_data.page,
+                limit=callback_data.limit
+            )
+        )
 
 
 @router.callback_query(keyboards.callback_datas.SelectAvatarCallback.filter())
@@ -306,8 +320,10 @@ async def input_my_name_for_portait_avatar(
 async def buy_new_avatar(
     call: CallbackQuery, texts: Texts
 ):
-    await call.message.edit_text(
-        texts.payment.BUY_AVATAR,
+    await call.message.delete()
+    await call.message.answer_photo(
+        photo=FSInputFile(settings.BASE_DIR + '/files/images/buy_avatar.jpg'),
+        caption=texts.payment.BUY_AVATAR,
         reply_markup=keyboards.buy_avatar(
             texts=texts, simple_price=models.get(0).price, portrait_price=models.get(1).price
         )
@@ -331,8 +347,9 @@ async def buy_avatar_select_model(
             type='avatar'
         )
     )
-    await call.message.edit_text(
-        'Оплата',
+    await call.message.delete()
+    await call.message.answer(
+        texts.payment.SELECT_PACKAGE,
         reply_markup=keyboards.pay_url_kb(
             pay_url=pay_data.url, texts=texts,
             back_callback_data='buy_new_avatar'

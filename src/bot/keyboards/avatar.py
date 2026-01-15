@@ -28,8 +28,8 @@ def on_create_avatar(texts: Texts):
 
 
 def avatars_list(
-    texts: Texts,
-    avatars: list[AvatarSchema], page: int = 0, limit: int = 10
+        texts: Texts,
+        avatars: list[AvatarSchema], page: int = 0, limit: int = 10
 ) -> InlineKeyboardMarkup:
     if avatars:
         rm = create_scrolling_kb(
@@ -37,7 +37,9 @@ def avatars_list(
             objs=avatars,
             callback_data=AvatarsListCallback,
             get_btn=lambda avatar: InlineKeyboardButton(
-                text=avatar.name or ('🆕 ' + texts.avatar.get_model_level_name(avatar.level)),
+                text=(f'[{texts.avatar.get_model_level_name(avatar.level)}] ' + avatar.name)
+                if avatar.status == 'ready'
+                else ('🆕 ' + texts.avatar.get_model_level_name(avatar.level)),
                 callback_data=SelectAvatarCallback(avatar_id=avatar.id).pack()
             ),
             limit=limit
@@ -57,8 +59,8 @@ def avatars_list(
 
 
 def avatar_page(
-    texts: Texts,
-    avatar: AvatarSchema
+        texts: Texts,
+        avatar: AvatarSchema
 ) -> InlineKeyboardMarkup:
     ikb = []
 
@@ -79,7 +81,7 @@ def avatar_page(
 
 def pro_avatar_start_know():
     return InlineKeyboardMarkup(inline_keyboard=[
-         [InlineKeyboardButton(
+        [InlineKeyboardButton(
             text='Купить', callback_data='buy_pro_avatar'
         )]
     ])
