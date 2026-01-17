@@ -73,7 +73,7 @@ async def get_prompt(
         await m.answer(texts.generation.UNPREDICTABLE_PROMPT_TYPE)
         return
 
-    chosen_avatar = await data.get('create_image_chosen_avatar')
+    chosen_avatar = data.get('create_image_chosen_avatar')
     if not chosen_avatar:
         chosen_avatar = await AvatarsRepo(db).get_by_user_current(user_id=m.from_user.id)
         await state.update_data(create_image_chosen_avatar=chosen_avatar.model_dump())
