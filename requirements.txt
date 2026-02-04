@@ -12,3 +12,4 @@ Pillow
 sqlalchemy
 asyncpg
 redis
+arq
