@@ -47,7 +47,7 @@ async def start(
         ):
             return
 
-    if user_has_avatar:
+    if not user_has_avatar:
         await chain_messages[0].send(chat_id=m.from_user.id, state=state, texts=texts)
     else:
         user_has_ready_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id, status='ready')
