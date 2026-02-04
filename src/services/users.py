@@ -39,7 +39,7 @@ class UsersService:
             not_update=not_update
         )
 
-        if user_exists:
+        if not user_exists:
             await self.bg_tasks_factory.notifications.on_first_start_bot(
                 user_id=tg_id, language=language
             )
