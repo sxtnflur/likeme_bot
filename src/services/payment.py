@@ -1,5 +1,5 @@
 import aiogram
-from bot import keyboards
+from bot import keyboards, screens
 from database import PaymentsRepo, UsersRepo, AvatarsRepo
 from schemas.payment import ImageGenerationsBuy, ModelInfo
 from services.avatars_service import AvatarsService
@@ -71,10 +71,9 @@ class PaymentService:
         )
         language = await UsersRepo(db).get_one_field('language', id=user_id)
         texts = get_texts(language)
-        await self.bot.send_message(
-            chat_id=user_id,
-            text=texts.payment.on_success_payment_package(updated_generations)
-        )
+        await screens.payment.on_successful_payment_package(
+            texts, generations=updated_generations
+        ).send_by_id(user_id, bot=self.bot)
 
     async def on_payment_avatar(self, user_id: int, amount: float,
                                 model_level: int, db: AsyncSession) -> None:
@@ -98,8 +97,4 @@ class PaymentService:
         )
         language = await UsersRepo(db).get_one_field('language', id=user_id)
         texts = get_texts(language)
-        await self.bot.send_message(
-            chat_id=user_id,
-            text=texts.payment.ON_SUCCESS_PAYMENT,
-            reply_markup=keyboards.on_success_payment_avatar(texts, avatar_id)
-        )
+        await screens.payment.on_success_payment_avatar(texts, avatar_id=avatar_id)
