@@ -7,6 +7,7 @@ from .base import BaseTexts, AvatarTexts, PaymentTexts, GenerationTexts, MainMen
 
 class Texts:
     def __init__(self, language: str):
+        self.language = language
         base_dir = Path(settings.BASE_DIR)
         self.folder = base_dir.joinpath(f'texts/texts/{language}')
 

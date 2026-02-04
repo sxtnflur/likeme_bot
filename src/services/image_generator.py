@@ -2,7 +2,8 @@ import datetime
 import aiogram
 import aiohttp
 from aiogram.types import Message
-from bot import keyboards
+from bg_tasks import BgTasksFactory
+from bot import keyboards, screens
 from bot.exceptions import SendToUserException
 from config import settings
 from enums.generation import AspectRatio
@@ -23,12 +24,14 @@ class ImageGeneratorService:
     def __init__(self, bot: aiogram.Bot, file_storage: BaseStorage,
                  categories_service: CategoriesService,
                  translation_service: TranslationService,
-                 remixing_service: RemixingService):
+                 remixing_service: RemixingService,
+                 bg_tasks: BgTasksFactory):
         self.bot = bot
         self.storage = file_storage
         self.categories_service = categories_service
         self.translation_service = translation_service
         self.remixing_service = remixing_service
+        self.bg_tasks = bg_tasks
 
     async def generate_image(self,
                              message: Message,
@@ -196,6 +199,12 @@ class ImageGeneratorService:
                                                       texts=texts),
             disable_web_page_preview=True
         )
+
+        await db.commit()
+
+        if updated_generations <= 0:
+            await screens.notifications.generations_spent.send_by_id(user_id, self.bot)
+            await self.bg_tasks.notifications.on_spent_generations(user_id, language=texts.language)
 
     async def switch_is_private_for_generated_image(self, image_id: int, db: AsyncSession) -> bool:
         is_private = await GeneratedImagesRepo(db).get_one_field(

@@ -1,5 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, URLInputFile, WebAppInfo
 from bot import states
+from bot.keyboards import PaymentStartCallback
 from bot.screens.base import ScreenDef
 from config import settings
 from texts import Texts
@@ -45,4 +46,37 @@ def created_avatar_didnot_generations(texts: Texts, user_name: str,
                 text='Открыть ленту', web_app=WebAppInfo(url=settings.WEBAPP_URL)
             )]
         ])
+    )
+
+
+generations_spent = ScreenDef(
+    text='''
+Твои идеи попали в топ ленты — их могут ремиксить другие пользователи.
+
+Чтобы продолжить — 🔁 <b>нужно пополнить баланс.</b>  
+''',
+    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text='Купить генерации',
+            callback_data=PaymentStartCallback().pack()
+        )]
+    ])
+)
+
+
+def generations_spent_and_no_payments(image_url: str):
+    return ScreenDef(
+        photo=URLInputFile(url=image_url),
+        text='''
+🔥 <b>Эта идея набрала 100+ просмотров.</b>
+Сможешь обогнать?
+
+⚡️<b>Пополни генерации и начни ремиксить!</b>
+'''.strip(),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text='Купить генерации',
+            callback_data=PaymentStartCallback().pack()
+        )]
+    ])
     )
