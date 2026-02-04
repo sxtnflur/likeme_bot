@@ -1,7 +1,7 @@
 from typing import cast
 
 from aiogram.types import BufferedInputFile
-from bot import keyboards
+from bot import keyboards, screens
 from enums.generation import AspectRatio
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram import Bot
@@ -17,32 +17,28 @@ class RemixingService:
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
-    def create_start_link(self, generated_image_id: int) -> str:
-        payload = f'remix-{generated_image_id}'
-        return create_deep_link(
-            username=cast(str, settings.BOT_USERNAME),
-            link_type="start",
-            payload=payload,
-            encode=True,
-            encoder=None
-    )
-
     async def process_start_link(
         self,
         payload: str,
         user_id: int,
         texts: Texts,
         state: FSMContext,
+        has_avatar: bool,
         db: AsyncSession
     ) -> bool:
         """
+        :param has_avatar:
         :param db:
         :param state:
         :param texts:
         :param payload: command.args
         :return: True - ссылка обработана, False = нет
         """
+        if not has_avatar:
+            await screens.remixing.no_avatar_else(texts).send_by_id(user_id, bot=self.bot)
+            return True
         payload = decode_payload(payload)
+
         if payload.startswith('remix-'):
             try:
                 image_id = int(payload.split('remix-')[1])
@@ -64,13 +60,6 @@ class RemixingService:
                               texts: Texts,
                               generated_image_id: int,
                               state: FSMContext, db: AsyncSession):
-        image = await GeneratedImagesRepo(db).get_one(id=generated_image_id)
-
-        await state.update_data(
-            create_image_prompt=image.prompt,
-            create_image_prompt_image_urls=image.prompt_images
-        )
-
         data = await state.get_data()
         chosen_avatar = data.get('create_image_chosen_avatar')
         if not chosen_avatar:
@@ -79,6 +68,13 @@ class RemixingService:
             await state.update_data(create_image_chosen_avatar=chosen_avatar.model_dump())
         else:
             chosen_avatar = AvatarSchema.model_validate(chosen_avatar)
+
+        image = await GeneratedImagesRepo(db).get_one(id=generated_image_id)
+
+        await state.update_data(
+            create_image_prompt=image.prompt,
+            create_image_prompt_image_urls=image.prompt_images
+        )
 
         image_file = await self.bot.session._session.get(image.image_url)
         await self.bot.send_photo(

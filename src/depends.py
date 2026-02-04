@@ -1,7 +1,10 @@
+from bg_tasks import BgTasksFactory
 from bot.loader import bot
 from config import settings
 from openai import AsyncOpenAI
 from payments import YooKassaService, PaymentFactory
+from services.bg_tasks.base import BgTasksProtocol
+from services.bg_tasks.scheduler import ARQRedisBgTasks
 from services.categories import CategoriesService
 from services.image_generator import ImageGeneratorService
 from services.ai.openai_service import OpenAIService
@@ -42,6 +45,11 @@ files_storage: BaseStorage = s3.S3FileStorage(
     base_url=settings.S3_BASE_URL
 )
 
+
+bg_tasks = ARQRedisBgTasks(redis_url=settings.REDIS_URL)
+
+bg_tasks_factory = BgTasksFactory(bg_tasks)
+
 # files_storage: BaseStorage = FileStorage(
 #     base_path=settings.FILES_PATH, base_url=settings.FILES_BASE_URL
 # )
@@ -65,8 +73,9 @@ image_generator_service = ImageGeneratorService(bot=bot, file_storage=files_stor
                                                 remixing_service=remixing_service)
 
 
-avatars_service = AvatarsService(bot=bot, storage=files_storage, openai=openai_service)
+avatars_service = AvatarsService(bot=bot, storage=files_storage, openai=openai_service,
+                                 bg_tasks=bg_tasks_factory)
 
 payments_service = PaymentService(bot=bot, avatars_service=avatars_service)
 
-users_service = UsersService(bot=bot, storage=files_storage)
+users_service = UsersService(bot=bot, storage=files_storage, bg_tasks_factory=bg_tasks_factory)

@@ -6,21 +6,19 @@ from enums.categories import CategoriesEnum
 from fastapi import HTTPException
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
-from services.remixing import RemixingService
+from utils.tg_link import create_remix_link
 
 
 class FeedUseCase:
-    def __init__(self, db: AsyncSession,
-                 remixing_service: RemixingService) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
-        self.remixing_service = remixing_service
 
     def prepare_post(self, post: Row) -> FeedPost:
         post = post._mapping
         image = post.GeneratedImage
         return FeedPost.model_validate(
             image.__dict__ | {
-                **post, 'remix_it_url': self.remixing_service.create_start_link(image.id),
+                **post, 'remix_it_url': create_remix_link(image.id),
             }
         )
 

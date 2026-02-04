@@ -12,6 +12,34 @@ class BaseRepo(Protocol[T]):
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    def _prepare_filters(self, filters: dict) -> list:
+        _filters = []
+
+        for k, v in filters.items():
+            if '__' in k:
+                field_name = k.split('__')[0]
+                action = k.split('__')[1]
+                if action == 'in':
+                    if not isinstance(v, list):
+                        raise ValueError(f'{k} должен быть списком')
+                    if not hasattr(self.model, field_name):
+                        raise ValueError(f'{self.model.__name__} не имеет поля {field_name}')
+
+                    _filters.append(getattr(self.model, field_name).in_(v))
+                elif action == 'lt':
+                    _filters.append(getattr(self.model, field_name).__lt__(v))
+                elif action == 'le':
+                    _filters.append(getattr(self.model, field_name).__le__(v))
+                elif action == 'gt':
+                    _filters.append(getattr(self.model, field_name).__gt__(v))
+                elif action == 'ge':
+                    _filters.append(getattr(self.model, field_name).__ge__(v))
+                elif action == 'not':
+                    _filters.append(getattr(self.model, field_name) != v)
+            else:
+                _filters.append(getattr(self.model, k) == v)
+        return _filters
+
     async def add(self, **vals) -> None:
         self.db.add(self.model(**vals))
 
@@ -44,7 +72,7 @@ class BaseRepo(Protocol[T]):
     async def get_one(self, **filters) -> T:
         return await self.db.scalar(
             select(self.model)
-            .filter_by(**filters)
+            .filter(*self._prepare_filters(filters))
         )
 
     async def get_list(
@@ -52,7 +80,7 @@ class BaseRepo(Protocol[T]):
     ) -> list[T]:
         stmt = select(self.model)
         if filters:
-            stmt = stmt.filter_by(**filters)
+            stmt = stmt.filter(*self._prepare_filters(filters))
         if offset:
             stmt = stmt.offset(offset)
         if limit:
@@ -62,20 +90,20 @@ class BaseRepo(Protocol[T]):
     async def get_one_field(self, field: str, **filters):
         return await self.db.scalar(
             select(getattr(self.model, field))
-            .filter_by(**filters)
+            .filter(*self._prepare_filters(filters))
         )
 
     async def get_only_fields(self, fields: list[str], **filters) -> tuple:
         fields_ = [getattr(self.model, f) for f in fields]
         res = await self.db.execute(
-            select(*fields_).filter_by(**filters)
+            select(*fields_).filter(*self._prepare_filters(filters))
         )
         return res.fetchone()
 
     async def update(self, filters: dict, updates: dict) -> None:
         await self.db.execute(
             update(self.model)
-            .filter_by(**filters)
+            .filter(*self._prepare_filters(filters))
             .values(**updates)
         )
 
@@ -90,7 +118,7 @@ class BaseRepo(Protocol[T]):
     async def decrease_field(self, filters: dict, field: str, value: int) -> int:
         return await self.db.scalar(
             update(self.model)
-            .filter_by(**filters)
+            .filter(*self._prepare_filters(filters))
             .values(**{field: getattr(self.model, field) - value})
             .returning(getattr(self.model, field))
         )
@@ -98,7 +126,7 @@ class BaseRepo(Protocol[T]):
     async def delete(self, **filters) -> None:
         await self.db.execute(
             delete(self.model)
-            .filter_by(**filters)
+            .filter(*self._prepare_filters(filters))
         )
 
     async def exists(self, **filters) -> bool:
@@ -106,9 +134,7 @@ class BaseRepo(Protocol[T]):
             select(
                 exists()
                 .select_from(self.model)
-                .where(
-                    *[getattr(self.model, key) == value for key, value in filters.items()]
-                )
+                .where(*self._prepare_filters(filters))
             )
         )
 
@@ -116,6 +142,6 @@ class BaseRepo(Protocol[T]):
         return await self.db.scalar(
             select(func.count())
             .select_from(self.model)
-            .filter_by(**filters)
+            .filter(*self._prepare_filters(filters))
         )
 

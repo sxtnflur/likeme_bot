@@ -8,13 +8,16 @@ from texts import get_texts
 
 image_packages = [
         ImageGenerationsBuy(
-            id=1, generations=50, price=790
+            id=1, generations=1, price=30
         ),
         ImageGenerationsBuy(
-            id=2, generations=100, price=1390
+            id=2, generations=50, price=790
         ),
         ImageGenerationsBuy(
-            id=3, generations=300, price=2790
+            id=3, generations=100, price=1390
+        ),
+        ImageGenerationsBuy(
+            id=4, generations=300, price=2790
         )
     ]
 models = {

@@ -17,3 +17,9 @@ services:
       - .env
     volumes:
       - /cdn:/cdn
+
+  worker:
+    build: .
+    command: python -m worker.py
+    env_file:
+      - .env

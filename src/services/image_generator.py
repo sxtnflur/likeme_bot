@@ -48,6 +48,8 @@ class ImageGeneratorService:
                 field='image_generations',
                 value=1
             )
+            if updated_generations < 0:
+                raise Exception
         except Exception as e:
             raise SendToUserException(
                 text=texts.generation.NO_GENERATIONS_MORE,

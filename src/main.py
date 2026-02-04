@@ -8,9 +8,10 @@ from bot.middlewares import MenuButtonsMiddleware
 from bot.middlewares.texts import TextsMiddleware
 from config import settings
 from fastapi import FastAPI, Request, BackgroundTasks
-from bot.loader import onstartup, bot, dp
-from bot.routers import __routers__
 from log import logger
+from bot.loader import bot, dp
+from bot.register import onstartup, onshutdown
+from bot.routers import __routers__
 
 dp.include_routers(*__routers__)
 dp.message.middleware(TextsMiddleware())
@@ -18,6 +19,8 @@ dp.callback_query.middleware(TextsMiddleware())
 
 dp.message.middleware(MenuButtonsMiddleware())
 register_errors(dp)
+
+dp.shutdown.register(onshutdown)
 
 
 @asynccontextmanager

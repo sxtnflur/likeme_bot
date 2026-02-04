@@ -2,6 +2,7 @@ import base64
 import io
 
 import aiogram
+from bg_tasks import BgTasksFactory
 from bot import keyboards
 from database import AvatarsRepo, UsersRepo, FalRequestsRepo
 from services.storage import BaseStorage
@@ -15,10 +16,12 @@ from .ai.openai_service import OpenAIService
 
 class AvatarsService:
     def __init__(self, bot: aiogram.Bot, storage: BaseStorage,
-                 openai: OpenAIService):
+                 openai: OpenAIService,
+                 bg_tasks: BgTasksFactory):
         self.bot = bot
         self.file_storage = storage
         self.openai = openai
+        self.bg_tasks = bg_tasks
 
     async def check_if_user_can_train_avatar(self, user_id: int, db: AsyncSession) -> bool:
         return await AvatarsRepo(db).exists(
@@ -71,6 +74,7 @@ class AvatarsService:
                 filters=dict(id=user_id),
                 updates=dict(current_avatar_id=avatar_id)
             )
+            await self.bg_tasks.notifications.on_created_avatar(user_id)
 
     async def start_train_portrait_avatar(
             self,
@@ -124,6 +128,8 @@ class AvatarsService:
         )
 
         await FalRequestsRepo(db).delete(id=request_id)
+
+        await self.bg_tasks.notifications.on_created_avatar(fal_req.user_id)
 
     async def _prepare_images(self, file_ids: list[str]) -> str:
         files = []

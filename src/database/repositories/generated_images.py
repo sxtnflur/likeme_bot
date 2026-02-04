@@ -3,6 +3,7 @@ from enums.categories import CategoriesEnum
 from sqlalchemy import select, desc, func, case
 from sqlalchemy.orm import selectinload, joinedload
 from .base import BaseRepo
+from .. import models
 from ..models.categories import GeneratedImageCategory
 from ..models.generated_images import GeneratedImage, Like
 
@@ -114,6 +115,29 @@ class GeneratedImagesRepo(BaseRepo[GeneratedImage]):
 
         res = await self.db.execute(stmt)
         return res.fetchall()
+
+    async def get_random_top_generation(self) -> models.GeneratedImage:
+        likes_count = func.count(Like.user_id).label("likes_count")
+
+        top_10_subq = (
+            select(GeneratedImage.id, likes_count)
+            .join(Like, Like.image_id == GeneratedImage.id)
+            .group_by(GeneratedImage.id)
+            .order_by(likes_count.desc())
+            .limit(10)
+        ).subquery()
+
+        stmt = (
+            select(GeneratedImage)
+            .options(
+                selectinload(GeneratedImage.user).load_only(models.User.first_name)
+            )
+            .join(top_10_subq, GeneratedImage.id == top_10_subq.c.id)
+            .order_by(func.random())  # для PostgreSQL / SQLite
+            .limit(1)
+        )
+
+        return await self.db.scalar(stmt)
 
     async def count_likes(self, id: int) -> int:
         stmt = (

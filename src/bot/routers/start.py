@@ -1,14 +1,16 @@
+import datetime
+
 from aiogram import Router, F
 from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from bot import keyboards
+from bot import keyboards, screens, loader
 from bot.middlewares.media_group import MediaMiddleware
 from bot.routers.start_messages_chain import chain_messages
 from bot.states import NanobananaAvatarStates
 from config import settings
 from database import db_connect, UsersRepo
-from depends import users_service, remixing_service, avatars_service
+from depends import users_service, remixing_service, avatars_service, bg_tasks, bg_tasks_factory
 from services.ai.fal import upload_zip_by_file_ids
 from sqlalchemy.ext.asyncio import AsyncSession
 from texts import Texts, get_texts, get_main_menu_button
@@ -31,18 +33,21 @@ async def start(
     texts = get_texts(language)
 
     print(f'{command.args=}')
+
+    user_has_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id)
+
     if command.args:
         if await remixing_service.process_start_link(
             payload=command.args,
             user_id=m.from_user.id,
             texts=texts,
             state=state,
+            has_avatar=user_has_avatar,
             db=db
         ):
             return
 
-    user_has_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id)
-    if not user_has_avatar:
+    if user_has_avatar:
         await chain_messages[0].send(chat_id=m.from_user.id, state=state, texts=texts)
     else:
         user_has_ready_avatar = await AvatarsRepo(db).exists(user_id=m.from_user.id, status='ready')

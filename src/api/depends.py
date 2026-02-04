@@ -32,9 +32,9 @@ PaymentUseCase = Annotated[PaymentUseCaseImpl, Depends(get_payments_use_case)]
 
 
 def get_feed_use_case(
-    db: Db, remixing_service: RemixingService
+    db: Db
 ):
-    return FeedUseCaseImpl(db, remixing_service=remixing_service)
+    return FeedUseCaseImpl(db)
 
 
 FeedUseCase = Annotated[FeedUseCaseImpl, Depends(get_feed_use_case)]

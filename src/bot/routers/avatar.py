@@ -8,7 +8,7 @@ from bot.middlewares.media_group import MediaMiddleware
 from bot.routers.start_messages_chain import chain_messages
 from bot.states import NanobananaAvatarStates, CreateModelStates
 from config import settings
-from database import AvatarsRepo, db_connect, UsersRepo
+from database import AvatarsRepo, db_connect, UsersRepo, OrdersRepo
 from depends import avatars_service, payment_factory, payments_service
 from enums.payments import PaymentTypeEnum
 from schemas.avatars import AvatarSchema
@@ -133,9 +133,15 @@ async def get_name_for_simple_avatar(
     if not m.text:
         await m.answer('Отправьте только текст')
         return
+
+    avatar_name = m.text.strip()
+
+    if await AvatarsRepo(db).exists(user_id=m.from_user.id, name=avatar_name):
+        await m.answer('Аватар с таким названием у вас уже есть. Введите другое название:')
+        return
+
     data = await state.get_data()
     file_id = data.get('nano_avatar_id')
-    avatar_name = m.text.strip()
     await state.clear()
 
     inputed_avatar_id: int | None = data.get('inputed_avatar_id')
@@ -331,12 +337,17 @@ async def buy_new_avatar(
 
 
 @router.callback_query(BuyAvatarCallback.filter())
+@db_connect()
 async def buy_avatar_select_model(
     call: CallbackQuery, callback_data: BuyAvatarCallback,
-    texts: Texts
+    texts: Texts, *, db: AsyncSession | None = None
 ):
 
     model = payments_service.get_model_info(callback_data.level)
+    order_id = await OrdersRepo(db).add_and_get(
+        dict(user_id=call.from_user.id),
+        get_field='id'
+    )
     pay_data = await payment_factory.create_payment(
         amount=model.price,
         description=model.payment_description,
@@ -344,7 +355,8 @@ async def buy_avatar_select_model(
         metadata=dict(
             user_id=call.from_user.id,
             model_level=model.level,
-            type='avatar'
+            type='avatar',
+            order_id=order_id.hex
         )
     )
     await call.message.delete()

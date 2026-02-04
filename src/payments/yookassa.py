@@ -1,9 +1,10 @@
 from yookassa import Configuration, Payment
 import json
 import abc
+
+from yookassa.domain.response import PaymentResponse
 from .base import AbstractPaymentService, PaymentData
 from config import settings
-
 
 class YooKassaServiceABC(AbstractPaymentService):
     @abc.abstractmethod
@@ -62,10 +63,7 @@ class YooKassaService(YooKassaServiceABC):
         }
 
         payment = await Payment.create(data)
-
-        payment_data = json.loads(payment.json())
-        payment_id = payment_data['id']
-        payment_url = (payment_data['confirmation'])['confirmation_url']
         return PaymentData(
-            id=payment_id, url=payment_url
+            id=payment.id,
+            url=payment.confirmation.confirmation_url
         )

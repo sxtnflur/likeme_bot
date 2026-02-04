@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from bot import keyboards
 from bot.keyboards import PaymentStartCallback
 from config import settings
-from database import db_connect, UsersRepo
+from database import db_connect, UsersRepo, OrdersRepo
 from depends import payment_factory, payments_service
 from enums.payments import PaymentTypeEnum
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -50,11 +50,17 @@ async def buy_start_call(
 
 
 @router.callback_query(keyboards.callback_datas.SelectImageGenerationsCallback.filter())
+@db_connect()
 async def select_image_generations(
     call: CallbackQuery, texts: Texts,
-    callback_data: keyboards.callback_datas.SelectImageGenerationsCallback
+    callback_data: keyboards.callback_datas.SelectImageGenerationsCallback,
+    *, db: AsyncSession | None = None
 ):
     package = await payments_service.get_image_package(callback_data.id)
+    order_id = await OrdersRepo(db).add_and_get(
+        dict(user_id=call.from_user.id),
+        get_field='id'
+    )
     pay_data = await payment_factory.create_payment(
         amount=package.price,
         description=texts.payment.generation_buy_choose_button(package),
@@ -63,7 +69,8 @@ async def select_image_generations(
         metadata={
             'type': 'package',
             'package_id': package.id,
-            'user_id': call.from_user.id
+            'user_id': call.from_user.id,
+            'order_id': order_id.hex
         }
     )
     if callback_data.save_msg:

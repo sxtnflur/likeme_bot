@@ -1,6 +1,14 @@
-from database.models.base import Base, IntPk, TgId
+from database.models.base import Base, IntPk, TgId, UUIDPK, CreatedAt
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
+
+
+class Order(Base):
+    __tablename__ = 'orders'
+
+    id: Mapped[UUIDPK]
+    user_id: Mapped[TgId] = mapped_column(ForeignKey('users.id'))
+    created_at: Mapped[CreatedAt]
 
 
 class Payment(Base):
@@ -11,3 +19,4 @@ class Payment(Base):
     amount: Mapped[float]
     package_id: Mapped[int | None]
     type: Mapped[str] = mapped_column(server_default='package')
+    created_at: Mapped[CreatedAt]

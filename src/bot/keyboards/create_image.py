@@ -99,10 +99,12 @@ def select_avatar_for_gen(avatars: list[AvatarSchema], texts: Texts,
         InlineKeyboardButton(
             text=texts.avatar.get_model_level_name(0, mark_as_chosen=filter_by_level == 0),
             callback_data=SelectedAvatarForGenCallback(avatar_id=selected_avatar_id, level=0).pack()
+            if filter_by_level != 0 else '-'
         ),
         InlineKeyboardButton(
             text=texts.avatar.get_model_level_name(1, mark_as_chosen=filter_by_level == 1),
             callback_data=SelectedAvatarForGenCallback(avatar_id=selected_avatar_id, level=1).pack()
+            if filter_by_level != 1 else '-'
         )
     ])
     ikb.append([InlineKeyboardButton(
