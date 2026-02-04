@@ -24,6 +24,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: python -m worker.py
+    command: python worker.py
     env_file:
       - .env
