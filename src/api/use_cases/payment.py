@@ -20,11 +20,15 @@ class PaymentUseCase:
 
         user_id = int(user_id)
 
-        if not await OrdersRepo(self.db).exists(
-            id=order_id,
-            user_id=user_id
-        ):
-            logger.error('Ордера с такими order_id и user_id не существует. order_id: {order_id}, user_id: {user_id}')
+        try:
+            if not await OrdersRepo(self.db).exists(
+                id=order_id,
+                user_id=user_id
+            ):
+                logger.error(f'Ордера с такими order_id и user_id не существует. order_id: {order_id}, user_id: {user_id}')
+                return
+        except:
+            logger.error(f'Ордера с такими order_id и user_id не существует. order_id: {order_id}, user_id: {user_id}')
             return
 
         match metadata['type']:
@@ -47,4 +51,7 @@ class PaymentUseCase:
             case _:
                 pass
 
-        await OrdersRepo(self.db).delete(id=order_id)
+        try:
+            await OrdersRepo(self.db).delete(id=order_id)
+        except:
+            pass
