@@ -53,7 +53,7 @@ generations_spent = ScreenDef(
     text='''
 Твои идеи попали в топ ленты — их могут ремиксить другие пользователи.
 
-Чтобы продолжить — 🔁 <b>нужно пополнить баланс.</b>  
+Чтобы продолжить — 🔁 <b>нужно пополнить баланс.</b>
 ''',
     reply_markup=InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(

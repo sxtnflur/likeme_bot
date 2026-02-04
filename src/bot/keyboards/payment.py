@@ -5,7 +5,7 @@ from texts import Texts
 from . import LoadPhotosToModelCallback, AvatarsListCallback
 from .base import create_list_kb
 from .callback_datas import BuyAvatarCallback, StartFillAddedAvatarCallback
-from .callback_datas.payment import BuyImageGenerationsCallback, PaymentStartCallback, SelectImageGenerationsCallback, \
+from .callback_datas.payment import PaymentStartCallback, SelectImageGenerationsCallback, \
     PromocodeCallback
 
 
@@ -13,7 +13,7 @@ def start_buy(texts: Texts):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text=texts.payment.BUY_IMAGE_GENERATIONS_BUTTON,
-            callback_data=BuyImageGenerationsCallback().pack()
+            callback_data=PaymentStartCallback().pack()
         )]
     ])
 

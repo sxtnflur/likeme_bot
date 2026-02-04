@@ -69,7 +69,8 @@ categories_service = CategoriesService(openai=openai_service)
 image_generator_service = ImageGeneratorService(bot=bot, file_storage=files_storage,
                                                 categories_service=categories_service,
                                                 translation_service=translation_service,
-                                                remixing_service=remixing_service)
+                                                remixing_service=remixing_service,
+                                                bg_tasks=bg_tasks_factory)
 
 
 avatars_service = AvatarsService(bot=bot, storage=files_storage, openai=openai_service,
