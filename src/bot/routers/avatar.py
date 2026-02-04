@@ -185,8 +185,12 @@ async def input_my_name_for_avatar(
             field='id', user_id=call.from_user.id, status='added', level=0
         )
         if not inputed_avatar_id:
-            raise NoBoughtAvatarsException
+            raise NoBoughtAvatarsException(texts)
 
+    try:
+        await call.message.delete()
+    except:
+        pass
     wait_msg = await call.message.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR)
     await avatars_service.train_simple_avatar(
         user_id=call.from_user.id,
@@ -249,7 +253,7 @@ async def get_photos_to_model(
             field='id', user_id=m.from_user.id, status='added', level=1
         )
         if not inputed_avatar_id:
-            raise NoBoughtAvatarsException
+            raise NoBoughtAvatarsException(texts)
 
     if not await AvatarsRepo(db).exists(user_id=m.from_user.id, name=m.from_user.full_name):
         reply_markup = keyboards.input_avatar_name(texts, level=1)
@@ -282,7 +286,7 @@ async def get_model_name_portait(m: Message, state: FSMContext, db: AsyncSession
             field='id', user_id=m.from_user.id, status='added', level=0
         )
         if not inputed_avatar_id:
-            raise NoBoughtAvatarsException
+            raise NoBoughtAvatarsException(texts)
 
     await m.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR_PRO)
     await avatars_service.start_train_portrait_avatar(
@@ -310,8 +314,12 @@ async def input_my_name_for_portait_avatar(
             field='id', user_id=call.from_user.id, status='added', level=1
         )
         if not inputed_avatar_id:
-            raise NoBoughtAvatarsException
+            raise NoBoughtAvatarsException(texts)
 
+    try:
+        await call.message.delete()
+    except:
+        pass
     await call.message.answer(texts.avatar.WAIT_MSG_CREATE_AVATAR_PRO)
     await avatars_service.start_train_portrait_avatar(
         user_id=call.from_user.id,
