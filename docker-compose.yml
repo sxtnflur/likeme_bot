@@ -19,7 +19,9 @@ services:
       - /cdn:/cdn
 
   worker:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: python -m worker.py
     env_file:
       - .env

@@ -3,7 +3,7 @@ from typing import Callable, AsyncIterable
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 from config import settings
 
-async_engine = create_async_engine(settings.DATABASE_URL, echo=True)
+async_engine = create_async_engine(settings.DATABASE_URL, echo=False)
 
 async_session = async_sessionmaker(autocommit=False, autoflush=False, bind=async_engine)
 
