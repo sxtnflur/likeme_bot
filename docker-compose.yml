@@ -19,6 +19,8 @@ services:
       - /cdn:/cdn
 
   worker:
+    working_dir: /app
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
