@@ -15,7 +15,7 @@ def didnot_load_photos_in_begin(texts: Texts):
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text='Создать аватар',
-                callback_data='chain-messages:3'
+                callback_data='chain-messages:2'
             )],
             [InlineKeyboardButton(
                 text='Открыть ленту', web_app=WebAppInfo(url=settings.WEBAPP_URL)

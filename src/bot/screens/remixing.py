@@ -15,6 +15,6 @@ def no_avatar_else(texts: Texts):
 ''',
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text='Что такое REMIX ME?', callback_data='chain-messages:0')],
-                    [InlineKeyboardButton(text='Создать аватар', callback_data='chain-messages:3')]]
+                    [InlineKeyboardButton(text='Создать аватар', callback_data='chain-messages:2')]]
                 )
     )
