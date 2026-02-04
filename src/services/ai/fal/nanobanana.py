@@ -7,15 +7,17 @@ async def edit_image(
         prompt: str,
         image_urls: list[str],
         num_images: int,
-        aspect_ratio: Literal['21:9', '1:1', '4:3', '3:2', '2:3', '5:4', '4:5', '3:4', '16:9', '9:16'] | None = None
+        aspect_ratio: Literal['21:9', '1:1', '4:3', '3:2', '2:3', '5:4', '4:5', '3:4', '16:9', '9:16'] | None = None,
+        pro: bool = True
 ) -> list[str]:
     handler = await fal_client.submit_async(
-        'fal-ai/nano-banana-pro/edit',
+        'fal-ai/nano-banana-pro/edit' if pro else 'fal-ai/nano-banana/edit',
         arguments={
             'prompt': prompt,
             'image_urls': image_urls,
             'num_images': num_images,
-            'aspect_ratio': aspect_ratio
+            'aspect_ratio': aspect_ratio,
+            'limit_generations': True
         }
     )
     data = await handler.get()

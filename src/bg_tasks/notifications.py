@@ -40,12 +40,13 @@ class NotificationsBgTasks:
 
     async def on_first_start_bot(self, user_id: int, language: str = 'ru'):
         await self.bg_tasks_service.delay(
-            on_first_start_bot, user_id, language, delay_by=datetime.timedelta(seconds=10)
+            on_first_start_bot, user_id, language,
+            delay_by=datetime.timedelta(hours=24)
         )
 
     async def on_created_avatar(self, user_id: int, language: str = 'ru'):
         await self.bg_tasks_service.delay(
             on_created_avatar,
             round(datetime.datetime.utcnow().timestamp()), user_id, language,
-            delay_by=datetime.timedelta(seconds=10)
+            delay_by=datetime.timedelta(hours=24)
         )
