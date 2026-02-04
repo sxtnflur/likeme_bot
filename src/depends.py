@@ -3,8 +3,7 @@ from bot.loader import bot
 from config import settings
 from openai import AsyncOpenAI
 from payments import YooKassaService, PaymentFactory
-from services.bg_tasks.base import BgTasksProtocol
-from services.bg_tasks.scheduler import ARQRedisBgTasks
+from services.bg_tasks import ARQRedisBgTasks
 from services.categories import CategoriesService
 from services.image_generator import ImageGeneratorService
 from services.ai.openai_service import OpenAIService

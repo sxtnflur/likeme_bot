@@ -1,10 +1,6 @@
 from typing import Callable, Sequence, Union
-
-from apscheduler.jobstores.redis import RedisJobStore
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from arq.typing import WorkerCoroutine
 from arq.worker import Function
-from redis import Redis
 import datetime
 import arq
 from .base import BgTasksProtocol

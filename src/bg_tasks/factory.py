@@ -1,5 +1,4 @@
-from arq.connections import RedisSettings
-from services.bg_tasks.scheduler import ARQRedisBgTasks
+from services.bg_tasks import ARQRedisBgTasks
 from .notifications import NotificationsBgTasks
 
 
