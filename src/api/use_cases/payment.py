@@ -47,4 +47,4 @@ class PaymentUseCase:
             case _:
                 pass
 
-        await OrdersRepo(self.db).delete(order_id=order_id)
+        await OrdersRepo(self.db).delete(id=order_id)
