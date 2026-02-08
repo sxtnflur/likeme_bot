@@ -48,5 +48,5 @@ async def chain_messages_handle(
                 user_id=call.from_user.id, level=0, db=db
             )
 
-    if chain_messages_index == (len(chain_messages) - 1):
+    if chain_messages_index == (len(chain_messages) - 2):
         await on_ask_photo()
