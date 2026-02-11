@@ -8,7 +8,7 @@ from texts import get_texts
 
 image_packages = [
         ImageGenerationsBuy(
-            id=1, generations=1, price=1
+            id=1, generations=1, price=30
         ),
         ImageGenerationsBuy(
             id=2, generations=50, price=790
